@@ -1,0 +1,10 @@
+prefix=D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: Vulkan-Loader
+Description: Vulkan Loader
+Version: 1.4.328
+Libs: -L${libdir} -lvulkan-1
+Cflags: -I${includedir}

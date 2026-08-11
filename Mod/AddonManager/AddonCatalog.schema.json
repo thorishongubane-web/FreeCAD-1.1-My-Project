@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AddonCatalog",
+  "description": "A catalog of addons indexed by addon ID. Each ID maps to a list of AddonCatalogEntry objects.",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "format": "uri",
+      "description": "A link to the JSON Schema describing the structure of this file."
+    },
+    "_meta": {
+      "type": "object",
+      "description": "Metadata describing the catalog file itself.",
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "schema_version": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "patternProperties": {
+    "^(?!\\$schema$|_meta$).+$": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "freecad_min": {
+            "type": "string",
+            "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-[\\da-zA-Z\\-.]+)?(?:\\+[\\da-zA-Z\\-.]+)?$"
+          },
+          "freecad_max": {
+            "type": "string",
+            "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-[\\da-zA-Z\\-.]+)?(?:\\+[\\da-zA-Z\\-.]+)?$"
+          },
+          "repository": {
+            "type": "string",
+            "format": "uri"
+          },
+          "git_ref": {
+            "type": "string"
+          },
+          "zip_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "note": {
+            "type": "string"
+          },
+          "branch_display_name": {
+            "type": "string"
+          },
+          "curated": {
+            "type": "boolean"
+          }
+        },
+        "anyOf": [
+          {
+            "required": [
+              "repository",
+              "git_ref"
+            ]
+          },
+          {
+            "required": [
+              "zip_url"
+            ]
+          }
+        ],
+        "if": {
+          "not": {
+            "required": [
+              "git_ref"
+            ]
+          }
+        },
+        "then": {
+          "required": [
+            "branch_display_name"
+          ]
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

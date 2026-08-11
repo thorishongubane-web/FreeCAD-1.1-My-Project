@@ -1,0 +1,10 @@
+prefix=D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library
+exec_prefix=D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library
+libdir=D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/lib
+includedir=D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/include
+
+Name: libcdt
+Description: Container DataType library
+Version: 13.1.2
+Libs: -L${libdir} -lcdt
+Cflags: -I${includedir} -I${includedir}/graphviz

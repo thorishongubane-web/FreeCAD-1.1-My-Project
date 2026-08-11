@@ -1,0 +1,12 @@
+prefix=D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library
+exec_prefix=D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library
+libdir=D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/lib
+includedir=D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/include/libpng16
+
+Name: libpng
+Description: Loads and saves PNG files
+Version: 1.6.55
+Requires.private: zlib
+Libs: -L${libdir} -lpng16
+Libs.private: -lz
+Cflags: -I${includedir}

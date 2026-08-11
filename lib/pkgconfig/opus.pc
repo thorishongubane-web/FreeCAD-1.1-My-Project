@@ -1,0 +1,16 @@
+# Opus codec reference implementation pkg-config file
+
+prefix=D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library
+exec_prefix=D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library
+libdir=D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/lib
+includedir=D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/include
+
+Name: Opus
+Description: Opus IETF audio codec ( build)
+URL: https://opus-codec.org/
+Version: 1.5.2 
+Requires:
+Conflicts:
+Libs: -LD:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/lib -lopus
+Libs.private: 
+Cflags: -ID:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/include/opus

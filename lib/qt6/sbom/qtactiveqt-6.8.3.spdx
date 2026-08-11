@@ -1,0 +1,456 @@
+SPDXVersion: SPDX-2.3
+DataLicense: CC0-1.0
+SPDXID: SPDXRef-DOCUMENT
+DocumentName: qtactiveqt-6.8.3
+DocumentNamespace: https://qt.io/spdxdocs/qtactiveqt-6.8.3
+Creator: Organization: TheQtCompany
+Creator: Tool: Qt Build System
+CreatorComment: <text>This SPDX document was created from CMake 4.0.3, using the qt
+build system from https://code.qt.io/cgit/qt/qtbase.git/tree/cmake/QtPublicSbomHelpers.cmake</text>
+Created: 2025-06-26T05:41:26Z
+ExternalDocumentRef: DocumentRef-qtbase https://qt.io/spdxdocs/qtbase-6.8.3 SHA1: 12de1d7f636830e21096a2fc32613ca8f580d2f3
+
+PackageName: MSVC
+SPDXID: SPDXRef-compiler
+PackageVersion: 19.43.34808.0
+PackageDownloadLocation: NOASSERTION
+PackageLicenseConcluded: NOASSERTION
+PackageLicenseDeclared: NOASSERTION
+PackageCopyrightText: NOASSERTION
+PackageSupplier: Organization: Anonymous
+FilesAnalyzed: false
+PackageSummary: <text>The compiler as identified by CMake, running on Windows (AMD64)</text>
+PrimaryPackagePurpose: APPLICATION
+Relationship: SPDXRef-compiler BUILD_DEPENDENCY_OF SPDXRef-Package-qtactiveqt
+RelationshipComment: <text>SPDXRef-Package-qtactiveqt is built by compiler MSVC version 19.43.34808.0</text>
+
+PackageName: qtactiveqt
+SPDXID: SPDXRef-Package-qtactiveqt
+ExternalRef: SECURITY cpe23Type cpe:2.3:a:qt:qt:6.8.3:*:*:*:*:*:*:*
+ExternalRef: PACKAGE-MANAGER purl pkg:generic/TheQtCompany/qtactiveqt@6.8.3
+PackageVersion: 6.8.3
+PackageSupplier: Organization: TheQtCompany
+PackageDownloadLocation: git://code.qt.io/qt/qtactiveqt.git
+PackageLicenseConcluded: NOASSERTION
+PackageLicenseDeclared: NOASSERTION
+PackageCopyrightText: Copyright (C) The Qt Company Ltd. and other contributors.
+PackageHomePage: https://qt.io
+PackageComment: <text>Built by CMake 4.0.3 with Release configuration for Windows (AMD64)</text>
+PackageVerificationCode: 68284c69365e1c16f58de4c8cc46cc8aad60b60b
+BuiltDate: 2025-06-26T05:41:26Z
+Relationship: SPDXRef-DOCUMENT DESCRIBES SPDXRef-Package-qtactiveqt
+
+PackageName: AxBasePrivate
+SPDXID: SPDXRef-Package-qtactiveqt-qt-module-AxBasePrivate
+PackageDownloadLocation: git://code.qt.io/qt/qtactiveqt.git
+PackageVersion: 6.8.3
+PackageSupplier: Organization: TheQtCompany
+PackageLicenseConcluded: LicenseRef-Qt-Commercial OR BSD-3-Clause
+PackageLicenseDeclared: LicenseRef-Qt-Commercial OR BSD-3-Clause
+ExternalRef: PACKAGE-MANAGER purl pkg:github/qt/qtactiveqt?library_name=AxBasePrivate#src/activeqt/axbase
+ExternalRef: PACKAGE-MANAGER purl pkg:generic/TheQtCompany/qtactiveqt-AxBasePrivate?vcs_url=https://code.qt.io/qt/qtactiveqt.git&library_name=AxBasePrivate#src/activeqt/axbase
+FilesAnalyzed: true
+PackageCopyrightText: <text>Copyright (C) The Qt Company Ltd. and other contributors.</text>
+PrimaryPackagePurpose: LIBRARY
+PackageComment: <text>
+CMake target name: AxBasePrivate
+CMake exported target name: Qt6::AxBase
+Contained in CMake package: Qt6AxBasePrivate
+</text>
+ExternalRef: SECURITY cpe23Type cpe:2.3:a:qt:qtactiveqt:6.8.3:*:*:*:*:*:*:*
+ExternalRef: SECURITY cpe23Type cpe:2.3:a:qt:qt:6.8.3:*:*:*:*:*:*:*
+Relationship: SPDXRef-Package-qtactiveqt-qt-module-AxBasePrivate DEPENDS_ON DocumentRef-qtbase:SPDXRef-Package-qtbase-qt-module-PlatformModuleInternal
+Relationship: SPDXRef-Package-qtactiveqt-qt-module-AxBasePrivate DEPENDS_ON DocumentRef-qtbase:SPDXRef-Package-qtbase-qt-module-Core
+Relationship: SPDXRef-Package-qtactiveqt-qt-module-AxBasePrivate DEPENDS_ON DocumentRef-qtbase:SPDXRef-Package-qtbase-qt-module-Gui
+Relationship: SPDXRef-Package-qtactiveqt-qt-module-AxBasePrivate DEPENDS_ON DocumentRef-qtbase:SPDXRef-Package-qtbase-qt-module-Widgets
+Relationship: SPDXRef-Package-qtactiveqt CONTAINS SPDXRef-Package-qtactiveqt-qt-module-AxBasePrivate
+
+FileName: ./lib/Qt6AxBase.lib
+SPDXID: SPDXRef-PackagedFile-qt-module-AxBasePrivate
+FileType: BINARY
+FileChecksum: SHA1: 351dd86a4cf9f59f3d52c205a1ebc2ec74959486
+LicenseConcluded: LicenseRef-Qt-Commercial OR BSD-3-Clause
+FileCopyrightText: <text>Copyright (C) The Qt Company Ltd. and other contributors.</text>
+LicenseInfoInFile: NOASSERTION
+Relationship: SPDXRef-Package-qtactiveqt-qt-module-AxBasePrivate CONTAINS SPDXRef-PackagedFile-qt-module-AxBasePrivate
+Relationship: SPDXRef-PackagedFile-qt-module-AxBasePrivate GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/src/activeqt/axbase/qaxtypefunctions.cpp
+Relationship: SPDXRef-PackagedFile-qt-module-AxBasePrivate GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/src/activeqt/axbase/qaxtypefunctions_p.h
+Relationship: SPDXRef-PackagedFile-qt-module-AxBasePrivate GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/src/activeqt/axbase/qaxutils.cpp
+Relationship: SPDXRef-PackagedFile-qt-module-AxBasePrivate GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/src/activeqt/axbase/qaxutils_p.h
+Relationship: SPDXRef-PackagedFile-qt-module-AxBasePrivate GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/src/activeqt/axbase/qbstr_p.h
+
+PackageName: AxServer
+SPDXID: SPDXRef-Package-qtactiveqt-qt-module-AxServer
+PackageDownloadLocation: git://code.qt.io/qt/qtactiveqt.git
+PackageVersion: 6.8.3
+PackageSupplier: Organization: TheQtCompany
+PackageLicenseConcluded: LicenseRef-Qt-Commercial OR BSD-3-Clause
+PackageLicenseDeclared: LicenseRef-Qt-Commercial OR BSD-3-Clause
+ExternalRef: PACKAGE-MANAGER purl pkg:github/qt/qtactiveqt?library_name=AxServer#src/activeqt/control
+ExternalRef: PACKAGE-MANAGER purl pkg:generic/TheQtCompany/qtactiveqt-AxServer?vcs_url=https://code.qt.io/qt/qtactiveqt.git&library_name=AxServer#src/activeqt/control
+FilesAnalyzed: true
+PackageCopyrightText: <text>Copyright (C) The Qt Company Ltd. and other contributors.</text>
+PrimaryPackagePurpose: LIBRARY
+PackageComment: <text>
+CMake target name: AxServer
+CMake exported target name: Qt6::AxServer
+Contained in CMake package: Qt6AxServer
+</text>
+ExternalRef: SECURITY cpe23Type cpe:2.3:a:qt:qtactiveqt:6.8.3:*:*:*:*:*:*:*
+ExternalRef: SECURITY cpe23Type cpe:2.3:a:qt:qt:6.8.3:*:*:*:*:*:*:*
+Relationship: SPDXRef-Package-qtactiveqt-qt-module-AxServer DEPENDS_ON DocumentRef-qtbase:SPDXRef-Package-qtbase-qt-module-Core
+Relationship: SPDXRef-Package-qtactiveqt-qt-module-AxServer DEPENDS_ON DocumentRef-qtbase:SPDXRef-Package-qtbase-qt-module-Gui
+Relationship: SPDXRef-Package-qtactiveqt-qt-module-AxServer DEPENDS_ON DocumentRef-qtbase:SPDXRef-Package-qtbase-qt-module-Widgets
+Relationship: SPDXRef-Package-qtactiveqt-qt-module-AxServer DEPENDS_ON DocumentRef-qtbase:SPDXRef-Package-qtbase-qt-module-PlatformModuleInternal
+Relationship: SPDXRef-Package-qtactiveqt-qt-module-AxServer DEPENDS_ON SPDXRef-Package-qtactiveqt-qt-module-AxBasePrivate
+Relationship: SPDXRef-Package-qtactiveqt CONTAINS SPDXRef-Package-qtactiveqt-qt-module-AxServer
+
+FileName: ./lib/Qt6AxServer.lib
+SPDXID: SPDXRef-PackagedFile-qt-module-AxServer
+FileType: BINARY
+FileChecksum: SHA1: fe63755b79538425564269ef752a6df4cd8804dd
+LicenseConcluded: LicenseRef-Qt-Commercial OR BSD-3-Clause
+FileCopyrightText: <text>Copyright (C) The Qt Company Ltd. and other contributors.</text>
+LicenseInfoInFile: NOASSERTION
+Relationship: SPDXRef-Package-qtactiveqt-qt-module-AxServer CONTAINS SPDXRef-PackagedFile-qt-module-AxServer
+Relationship: SPDXRef-PackagedFile-qt-module-AxServer GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/src/activeqt/shared/qaxtypes.cpp
+Relationship: SPDXRef-PackagedFile-qt-module-AxServer GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/src/activeqt/shared/qaxtypes_p.h
+Relationship: SPDXRef-PackagedFile-qt-module-AxServer GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/src/activeqt/control/qaxaggregated.cpp
+Relationship: SPDXRef-PackagedFile-qt-module-AxServer GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/src/activeqt/control/qaxaggregated.h
+Relationship: SPDXRef-PackagedFile-qt-module-AxServer GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/src/activeqt/control/qaxbindable.cpp
+Relationship: SPDXRef-PackagedFile-qt-module-AxServer GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/src/activeqt/control/qaxbindable.h
+Relationship: SPDXRef-PackagedFile-qt-module-AxServer GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/src/activeqt/control/qaxfactory.cpp
+Relationship: SPDXRef-PackagedFile-qt-module-AxServer GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/src/activeqt/control/qaxfactory.h
+Relationship: SPDXRef-PackagedFile-qt-module-AxServer GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/src/activeqt/control/qaxmain.cpp
+Relationship: SPDXRef-PackagedFile-qt-module-AxServer GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/src/activeqt/control/qaxserver.cpp
+Relationship: SPDXRef-PackagedFile-qt-module-AxServer GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/src/activeqt/control/qaxserverbase.cpp
+Relationship: SPDXRef-PackagedFile-qt-module-AxServer GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/src/activeqt/control/qaxserverdll.cpp
+Relationship: SPDXRef-PackagedFile-qt-module-AxServer GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/src/activeqt/control/qaxservermain.cpp
+Relationship: SPDXRef-PackagedFile-qt-module-AxServer GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/src/activeqt/control/qclassfactory_p.h
+
+PackageName: AxContainer
+SPDXID: SPDXRef-Package-qtactiveqt-qt-module-AxContainer
+PackageDownloadLocation: git://code.qt.io/qt/qtactiveqt.git
+PackageVersion: 6.8.3
+PackageSupplier: Organization: TheQtCompany
+PackageLicenseConcluded: LicenseRef-Qt-Commercial OR BSD-3-Clause
+PackageLicenseDeclared: LicenseRef-Qt-Commercial OR BSD-3-Clause
+ExternalRef: PACKAGE-MANAGER purl pkg:github/qt/qtactiveqt?library_name=AxContainer#src/activeqt/container
+ExternalRef: PACKAGE-MANAGER purl pkg:generic/TheQtCompany/qtactiveqt-AxContainer?vcs_url=https://code.qt.io/qt/qtactiveqt.git&library_name=AxContainer#src/activeqt/container
+FilesAnalyzed: true
+PackageCopyrightText: <text>Copyright (C) The Qt Company Ltd. and other contributors.</text>
+PrimaryPackagePurpose: LIBRARY
+PackageComment: <text>
+CMake target name: AxContainer
+CMake exported target name: Qt6::AxContainer
+Contained in CMake package: Qt6AxContainer
+</text>
+ExternalRef: SECURITY cpe23Type cpe:2.3:a:qt:qtactiveqt:6.8.3:*:*:*:*:*:*:*
+ExternalRef: SECURITY cpe23Type cpe:2.3:a:qt:qt:6.8.3:*:*:*:*:*:*:*
+Relationship: SPDXRef-Package-qtactiveqt-qt-module-AxContainer DEPENDS_ON DocumentRef-qtbase:SPDXRef-Package-qtbase-qt-module-Core
+Relationship: SPDXRef-Package-qtactiveqt-qt-module-AxContainer DEPENDS_ON DocumentRef-qtbase:SPDXRef-Package-qtbase-qt-module-Gui
+Relationship: SPDXRef-Package-qtactiveqt-qt-module-AxContainer DEPENDS_ON DocumentRef-qtbase:SPDXRef-Package-qtbase-qt-module-Widgets
+Relationship: SPDXRef-Package-qtactiveqt-qt-module-AxContainer DEPENDS_ON DocumentRef-qtbase:SPDXRef-Package-qtbase-qt-module-PlatformModuleInternal
+Relationship: SPDXRef-Package-qtactiveqt-qt-module-AxContainer DEPENDS_ON SPDXRef-Package-qtactiveqt-qt-module-AxBasePrivate
+Relationship: SPDXRef-Package-qtactiveqt CONTAINS SPDXRef-Package-qtactiveqt-qt-module-AxContainer
+
+FileName: ./lib/Qt6AxContainer.lib
+SPDXID: SPDXRef-PackagedFile-qt-module-AxContainer
+FileType: BINARY
+FileChecksum: SHA1: fc77a491c746f3356f010b189c67a05593497f69
+LicenseConcluded: LicenseRef-Qt-Commercial OR BSD-3-Clause
+FileCopyrightText: <text>Copyright (C) The Qt Company Ltd. and other contributors.</text>
+LicenseInfoInFile: NOASSERTION
+Relationship: SPDXRef-Package-qtactiveqt-qt-module-AxContainer CONTAINS SPDXRef-PackagedFile-qt-module-AxContainer
+Relationship: SPDXRef-PackagedFile-qt-module-AxContainer GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/src/activeqt/control/qaxaggregated.h
+Relationship: SPDXRef-PackagedFile-qt-module-AxContainer GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/src/activeqt/shared/qaxtypes.cpp
+Relationship: SPDXRef-PackagedFile-qt-module-AxContainer GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/src/activeqt/shared/qaxtypes_p.h
+Relationship: SPDXRef-PackagedFile-qt-module-AxContainer GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/src/activeqt/container/qaxbase.cpp
+Relationship: SPDXRef-PackagedFile-qt-module-AxContainer GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/src/activeqt/container/qaxbase.h
+Relationship: SPDXRef-PackagedFile-qt-module-AxContainer GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/src/activeqt/container/qaxbase_p.h
+Relationship: SPDXRef-PackagedFile-qt-module-AxContainer GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/src/activeqt/container/qaxdump.cpp
+Relationship: SPDXRef-PackagedFile-qt-module-AxContainer GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/src/activeqt/container/qaxobject.cpp
+Relationship: SPDXRef-PackagedFile-qt-module-AxContainer GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/src/activeqt/container/qaxobject.h
+Relationship: SPDXRef-PackagedFile-qt-module-AxContainer GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/src/activeqt/container/qaxobject_p.h
+Relationship: SPDXRef-PackagedFile-qt-module-AxContainer GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/src/activeqt/container/qaxobjectinterface.h
+Relationship: SPDXRef-PackagedFile-qt-module-AxContainer GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/src/activeqt/container/qaxscript.cpp
+Relationship: SPDXRef-PackagedFile-qt-module-AxContainer GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/src/activeqt/container/qaxscript.h
+Relationship: SPDXRef-PackagedFile-qt-module-AxContainer GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/src/activeqt/container/qaxscriptwrapper.cpp
+Relationship: SPDXRef-PackagedFile-qt-module-AxContainer GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/src/activeqt/container/qaxselect.cpp
+Relationship: SPDXRef-PackagedFile-qt-module-AxContainer GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/src/activeqt/container/qaxselect.h
+Relationship: SPDXRef-PackagedFile-qt-module-AxContainer GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/src/activeqt/container/qaxselect.ui
+Relationship: SPDXRef-PackagedFile-qt-module-AxContainer GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/src/activeqt/container/qaxwidget.cpp
+Relationship: SPDXRef-PackagedFile-qt-module-AxContainer GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/src/activeqt/container/qaxwidget.h
+Relationship: SPDXRef-PackagedFile-qt-module-AxContainer GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/src/activeqt/container/qaxwidget_p.h
+
+PackageName: ActiveQt
+SPDXID: SPDXRef-Package-qtactiveqt-qt-module-ActiveQt
+PackageDownloadLocation: git://code.qt.io/qt/qtactiveqt.git
+PackageVersion: 6.8.3
+PackageSupplier: Organization: TheQtCompany
+PackageLicenseConcluded: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+PackageLicenseDeclared: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+ExternalRef: PACKAGE-MANAGER purl pkg:github/qt/qtactiveqt?library_name=ActiveQt#src/activeqt
+ExternalRef: PACKAGE-MANAGER purl pkg:generic/TheQtCompany/qtactiveqt-ActiveQt?vcs_url=https://code.qt.io/qt/qtactiveqt.git&library_name=ActiveQt#src/activeqt
+FilesAnalyzed: true
+PackageCopyrightText: <text>Copyright (C) The Qt Company Ltd. and other contributors.</text>
+PrimaryPackagePurpose: LIBRARY
+PackageComment: <text>
+CMake target name: ActiveQt
+CMake exported target name: Qt6::ActiveQt
+Contained in CMake package: Qt6ActiveQt
+</text>
+ExternalRef: SECURITY cpe23Type cpe:2.3:a:qt:qtactiveqt:6.8.3:*:*:*:*:*:*:*
+ExternalRef: SECURITY cpe23Type cpe:2.3:a:qt:qt:6.8.3:*:*:*:*:*:*:*
+Relationship: SPDXRef-Package-qtactiveqt CONTAINS SPDXRef-Package-qtactiveqt-qt-module-ActiveQt
+
+PackageName: idc
+SPDXID: SPDXRef-Package-qtactiveqt-qt-tool-idc
+PackageDownloadLocation: git://code.qt.io/qt/qtactiveqt.git
+PackageVersion: 6.8.3
+PackageSupplier: Organization: TheQtCompany
+PackageLicenseConcluded: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+PackageLicenseDeclared: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+ExternalRef: PACKAGE-MANAGER purl pkg:github/qt/qtactiveqt?library_name=idc#src/tools/idc
+ExternalRef: PACKAGE-MANAGER purl pkg:generic/TheQtCompany/qtactiveqt-idc?vcs_url=https://code.qt.io/qt/qtactiveqt.git&library_name=idc#src/tools/idc
+FilesAnalyzed: true
+PackageCopyrightText: <text>Copyright (C) The Qt Company Ltd. and other contributors.</text>
+PrimaryPackagePurpose: APPLICATION
+PackageComment: <text>
+CMake target name: idc
+</text>
+ExternalRef: SECURITY cpe23Type cpe:2.3:a:qt:qtactiveqt:6.8.3:*:*:*:*:*:*:*
+ExternalRef: SECURITY cpe23Type cpe:2.3:a:qt:qt:6.8.3:*:*:*:*:*:*:*
+Relationship: SPDXRef-Package-qtactiveqt-qt-tool-idc DEPENDS_ON DocumentRef-qtbase:SPDXRef-Package-qtbase-qt-module-PlatformToolInternal
+Relationship: SPDXRef-Package-qtactiveqt-qt-tool-idc DEPENDS_ON DocumentRef-qtbase:SPDXRef-Package-qtbase-qt-module-PlatformCommonInternal
+Relationship: SPDXRef-Package-qtactiveqt-qt-tool-idc DEPENDS_ON DocumentRef-qtbase:SPDXRef-Package-qtbase-qt-module-Core
+Relationship: SPDXRef-Package-qtactiveqt CONTAINS SPDXRef-Package-qtactiveqt-qt-tool-idc
+
+FileName: ./lib/qt6/bin/idc.exe
+SPDXID: SPDXRef-PackagedFile-qt-tool-idc
+FileType: BINARY
+FileChecksum: SHA1: 263cccd865bc9a9c4e7c53354c2054b0ef3db05c
+LicenseConcluded: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+FileCopyrightText: <text>Copyright (C) The Qt Company Ltd. and other contributors.</text>
+LicenseInfoInFile: NOASSERTION
+Relationship: SPDXRef-Package-qtactiveqt-qt-tool-idc CONTAINS SPDXRef-PackagedFile-qt-tool-idc
+Relationship: SPDXRef-PackagedFile-qt-tool-idc GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/src/tools/idc/C:/bld/qt6-main_1750915145827/work/build/qtactiveqt/src/tools/idc/idc_resource.rc
+Relationship: SPDXRef-PackagedFile-qt-tool-idc GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/src/tools/idc/main.cpp
+Relationship: SPDXRef-PackagedFile-qt-tool-idc GENERATED_FROM NOASSERTION
+RelationshipComment: /build_dir/qtactiveqt/src/tools/idc/idc_longpath.manifest
+
+PackageName: dumpdoc
+SPDXID: SPDXRef-Package-qtactiveqt-qt-tool-dumpdoc
+PackageDownloadLocation: git://code.qt.io/qt/qtactiveqt.git
+PackageVersion: 6.8.3
+PackageSupplier: Organization: TheQtCompany
+PackageLicenseConcluded: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+PackageLicenseDeclared: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+ExternalRef: PACKAGE-MANAGER purl pkg:github/qt/qtactiveqt?library_name=dumpdoc#tools/dumpdoc
+ExternalRef: PACKAGE-MANAGER purl pkg:generic/TheQtCompany/qtactiveqt-dumpdoc?vcs_url=https://code.qt.io/qt/qtactiveqt.git&library_name=dumpdoc#tools/dumpdoc
+FilesAnalyzed: true
+PackageCopyrightText: <text>Copyright (C) The Qt Company Ltd. and other contributors.</text>
+PrimaryPackagePurpose: APPLICATION
+PackageComment: <text>
+CMake target name: dumpdoc
+</text>
+ExternalRef: SECURITY cpe23Type cpe:2.3:a:qt:qtactiveqt:6.8.3:*:*:*:*:*:*:*
+ExternalRef: SECURITY cpe23Type cpe:2.3:a:qt:qt:6.8.3:*:*:*:*:*:*:*
+Relationship: SPDXRef-Package-qtactiveqt-qt-tool-dumpdoc DEPENDS_ON DocumentRef-qtbase:SPDXRef-Package-qtbase-qt-module-Gui
+Relationship: SPDXRef-Package-qtactiveqt-qt-tool-dumpdoc DEPENDS_ON DocumentRef-qtbase:SPDXRef-Package-qtbase-qt-module-Widgets
+Relationship: SPDXRef-Package-qtactiveqt-qt-tool-dumpdoc DEPENDS_ON DocumentRef-qtbase:SPDXRef-Package-qtbase-qt-module-PlatformToolInternal
+Relationship: SPDXRef-Package-qtactiveqt-qt-tool-dumpdoc DEPENDS_ON DocumentRef-qtbase:SPDXRef-Package-qtbase-qt-module-PlatformCommonInternal
+Relationship: SPDXRef-Package-qtactiveqt-qt-tool-dumpdoc DEPENDS_ON DocumentRef-qtbase:SPDXRef-Package-qtbase-qt-module-Core
+Relationship: SPDXRef-Package-qtactiveqt-qt-tool-dumpdoc DEPENDS_ON SPDXRef-Package-qtactiveqt-qt-module-AxContainer
+Relationship: SPDXRef-Package-qtactiveqt CONTAINS SPDXRef-Package-qtactiveqt-qt-tool-dumpdoc
+
+FileName: ./lib/qt6/bin/dumpdoc.exe
+SPDXID: SPDXRef-PackagedFile-qt-tool-dumpdoc
+FileType: BINARY
+FileChecksum: SHA1: 60087d90744fa0d6cd461579ba19e74a097a5b51
+LicenseConcluded: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+FileCopyrightText: <text>Copyright (C) The Qt Company Ltd. and other contributors.</text>
+LicenseInfoInFile: NOASSERTION
+Relationship: SPDXRef-Package-qtactiveqt-qt-tool-dumpdoc CONTAINS SPDXRef-PackagedFile-qt-tool-dumpdoc
+Relationship: SPDXRef-PackagedFile-qt-tool-dumpdoc GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/tools/dumpdoc/C:/bld/qt6-main_1750915145827/work/build/qtactiveqt/tools/dumpdoc/dumpdoc_resource.rc
+Relationship: SPDXRef-PackagedFile-qt-tool-dumpdoc GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/tools/dumpdoc/main.cpp
+Relationship: SPDXRef-PackagedFile-qt-tool-dumpdoc GENERATED_FROM NOASSERTION
+RelationshipComment: /build_dir/qtactiveqt/tools/dumpdoc/dumpdoc_longpath.manifest
+
+PackageName: dumpcpp
+SPDXID: SPDXRef-Package-qtactiveqt-qt-tool-dumpcpp
+PackageDownloadLocation: git://code.qt.io/qt/qtactiveqt.git
+PackageVersion: 6.8.3
+PackageSupplier: Organization: TheQtCompany
+PackageLicenseConcluded: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+PackageLicenseDeclared: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+ExternalRef: PACKAGE-MANAGER purl pkg:github/qt/qtactiveqt?library_name=dumpcpp#tools/dumpcpp
+ExternalRef: PACKAGE-MANAGER purl pkg:generic/TheQtCompany/qtactiveqt-dumpcpp?vcs_url=https://code.qt.io/qt/qtactiveqt.git&library_name=dumpcpp#tools/dumpcpp
+FilesAnalyzed: true
+PackageCopyrightText: <text>Copyright (C) The Qt Company Ltd. and other contributors.</text>
+PrimaryPackagePurpose: APPLICATION
+PackageComment: <text>
+CMake target name: dumpcpp
+</text>
+ExternalRef: SECURITY cpe23Type cpe:2.3:a:qt:qtactiveqt:6.8.3:*:*:*:*:*:*:*
+ExternalRef: SECURITY cpe23Type cpe:2.3:a:qt:qt:6.8.3:*:*:*:*:*:*:*
+Relationship: SPDXRef-Package-qtactiveqt-qt-tool-dumpcpp DEPENDS_ON DocumentRef-qtbase:SPDXRef-Package-qtbase-qt-module-Core
+Relationship: SPDXRef-Package-qtactiveqt-qt-tool-dumpcpp DEPENDS_ON DocumentRef-qtbase:SPDXRef-Package-qtbase-qt-module-Gui
+Relationship: SPDXRef-Package-qtactiveqt-qt-tool-dumpcpp DEPENDS_ON DocumentRef-qtbase:SPDXRef-Package-qtbase-qt-module-Widgets
+Relationship: SPDXRef-Package-qtactiveqt-qt-tool-dumpcpp DEPENDS_ON DocumentRef-qtbase:SPDXRef-Package-qtbase-qt-module-PlatformToolInternal
+Relationship: SPDXRef-Package-qtactiveqt-qt-tool-dumpcpp DEPENDS_ON DocumentRef-qtbase:SPDXRef-Package-qtbase-qt-module-PlatformCommonInternal
+Relationship: SPDXRef-Package-qtactiveqt-qt-tool-dumpcpp DEPENDS_ON SPDXRef-Package-qtactiveqt-qt-module-AxContainer
+Relationship: SPDXRef-Package-qtactiveqt CONTAINS SPDXRef-Package-qtactiveqt-qt-tool-dumpcpp
+
+FileName: ./lib/qt6/bin/dumpcpp.exe
+SPDXID: SPDXRef-PackagedFile-qt-tool-dumpcpp
+FileType: BINARY
+FileChecksum: SHA1: 2c7e948ac6637b7d376424247141e5a896b599c9
+LicenseConcluded: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+FileCopyrightText: <text>Copyright (C) The Qt Company Ltd. and other contributors.</text>
+LicenseInfoInFile: NOASSERTION
+Relationship: SPDXRef-Package-qtactiveqt-qt-tool-dumpcpp CONTAINS SPDXRef-PackagedFile-qt-tool-dumpcpp
+Relationship: SPDXRef-PackagedFile-qt-tool-dumpcpp GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/tools/dumpcpp/C:/bld/qt6-main_1750915145827/work/build/qtactiveqt/tools/dumpcpp/dumpcpp_resource.rc
+Relationship: SPDXRef-PackagedFile-qt-tool-dumpcpp GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/tools/dumpcpp/main.cpp
+Relationship: SPDXRef-PackagedFile-qt-tool-dumpcpp GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/tools/dumpcpp/moc.cpp
+Relationship: SPDXRef-PackagedFile-qt-tool-dumpcpp GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/tools/dumpcpp/moc.h
+Relationship: SPDXRef-PackagedFile-qt-tool-dumpcpp GENERATED_FROM NOASSERTION
+RelationshipComment: /build_dir/qtactiveqt/tools/dumpcpp/dumpcpp_longpath.manifest
+
+PackageName: testcon
+SPDXID: SPDXRef-Package-qtactiveqt-qt-app-testcon
+PackageDownloadLocation: git://code.qt.io/qt/qtactiveqt.git
+PackageVersion: 6.8.3
+PackageSupplier: Organization: TheQtCompany
+PackageLicenseConcluded: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+PackageLicenseDeclared: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+ExternalRef: PACKAGE-MANAGER purl pkg:github/qt/qtactiveqt?library_name=testcon#tools/testcon
+ExternalRef: PACKAGE-MANAGER purl pkg:generic/TheQtCompany/qtactiveqt-testcon?vcs_url=https://code.qt.io/qt/qtactiveqt.git&library_name=testcon#tools/testcon
+FilesAnalyzed: true
+PackageCopyrightText: <text>Copyright (C) The Qt Company Ltd. and other contributors.</text>
+PrimaryPackagePurpose: APPLICATION
+PackageComment: <text>
+CMake target name: testcon
+</text>
+ExternalRef: SECURITY cpe23Type cpe:2.3:a:qt:qtactiveqt:6.8.3:*:*:*:*:*:*:*
+ExternalRef: SECURITY cpe23Type cpe:2.3:a:qt:qt:6.8.3:*:*:*:*:*:*:*
+Relationship: SPDXRef-Package-qtactiveqt-qt-app-testcon DEPENDS_ON DocumentRef-qtbase:SPDXRef-Package-qtbase-qt-module-Gui
+Relationship: SPDXRef-Package-qtactiveqt-qt-app-testcon DEPENDS_ON DocumentRef-qtbase:SPDXRef-Package-qtbase-qt-module-PrintSupport
+Relationship: SPDXRef-Package-qtactiveqt-qt-app-testcon DEPENDS_ON DocumentRef-qtbase:SPDXRef-Package-qtbase-qt-module-Widgets
+Relationship: SPDXRef-Package-qtactiveqt-qt-app-testcon DEPENDS_ON DocumentRef-qtbase:SPDXRef-Package-qtbase-qt-module-PlatformAppInternal
+Relationship: SPDXRef-Package-qtactiveqt-qt-app-testcon DEPENDS_ON DocumentRef-qtbase:SPDXRef-Package-qtbase-qt-module-PlatformCommonInternal
+Relationship: SPDXRef-Package-qtactiveqt-qt-app-testcon DEPENDS_ON DocumentRef-qtbase:SPDXRef-Package-qtbase-qt-module-Core
+Relationship: SPDXRef-Package-qtactiveqt-qt-app-testcon DEPENDS_ON SPDXRef-Package-qtactiveqt-qt-module-AxContainer
+Relationship: SPDXRef-Package-qtactiveqt-qt-app-testcon DEPENDS_ON SPDXRef-Package-qtactiveqt-qt-module-AxServer
+Relationship: SPDXRef-Package-qtactiveqt CONTAINS SPDXRef-Package-qtactiveqt-qt-app-testcon
+
+FileName: ./lib/qt6/bin/testcon.exe
+SPDXID: SPDXRef-PackagedFile-qt-app-testcon
+FileType: BINARY
+FileChecksum: SHA1: 4bb1ef4a8d959c4d62433e911a0e3879ab60edbb
+LicenseConcluded: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+FileCopyrightText: <text>Copyright (C) The Qt Company Ltd. and other contributors.</text>
+LicenseInfoInFile: NOASSERTION
+Relationship: SPDXRef-Package-qtactiveqt-qt-app-testcon CONTAINS SPDXRef-PackagedFile-qt-app-testcon
+Relationship: SPDXRef-PackagedFile-qt-app-testcon GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/tools/testcon/ambientproperties.cpp
+Relationship: SPDXRef-PackagedFile-qt-app-testcon GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/tools/testcon/ambientproperties.h
+Relationship: SPDXRef-PackagedFile-qt-app-testcon GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/tools/testcon/ambientproperties.ui
+Relationship: SPDXRef-PackagedFile-qt-app-testcon GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/tools/testcon/changeproperties.cpp
+Relationship: SPDXRef-PackagedFile-qt-app-testcon GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/tools/testcon/changeproperties.h
+Relationship: SPDXRef-PackagedFile-qt-app-testcon GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/tools/testcon/changeproperties.ui
+Relationship: SPDXRef-PackagedFile-qt-app-testcon GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/tools/testcon/controlinfo.cpp
+Relationship: SPDXRef-PackagedFile-qt-app-testcon GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/tools/testcon/controlinfo.h
+Relationship: SPDXRef-PackagedFile-qt-app-testcon GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/tools/testcon/controlinfo.ui
+Relationship: SPDXRef-PackagedFile-qt-app-testcon GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/tools/testcon/docuwindow.cpp
+Relationship: SPDXRef-PackagedFile-qt-app-testcon GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/tools/testcon/docuwindow.h
+Relationship: SPDXRef-PackagedFile-qt-app-testcon GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/tools/testcon/invokemethod.cpp
+Relationship: SPDXRef-PackagedFile-qt-app-testcon GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/tools/testcon/invokemethod.h
+Relationship: SPDXRef-PackagedFile-qt-app-testcon GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/tools/testcon/invokemethod.ui
+Relationship: SPDXRef-PackagedFile-qt-app-testcon GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/tools/testcon/main.cpp
+Relationship: SPDXRef-PackagedFile-qt-app-testcon GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/tools/testcon/mainwindow.cpp
+Relationship: SPDXRef-PackagedFile-qt-app-testcon GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/tools/testcon/mainwindow.h
+Relationship: SPDXRef-PackagedFile-qt-app-testcon GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/tools/testcon/mainwindow.ui
+Relationship: SPDXRef-PackagedFile-qt-app-testcon GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/tools/testcon/sandboxing.cpp
+Relationship: SPDXRef-PackagedFile-qt-app-testcon GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/tools/testcon/sandboxing.h
+Relationship: SPDXRef-PackagedFile-qt-app-testcon GENERATED_FROM NOASSERTION
+RelationshipComment: /build_dir/qtactiveqt/tools/testcon/.qt/rcc/qrc_testcon.cpp
+Relationship: SPDXRef-PackagedFile-qt-app-testcon GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtactiveqt/tools/testcon/C:/bld/qt6-main_1750915145827/work/build/qtactiveqt/tools/testcon/testcon_resource.rc
+
+LicenseID: LicenseRef-Qt-Commercial
+ExtractedText: <text>Licensees holding valid commercial Qt licenses may use this software in
+accordance with the the terms contained in a written agreement between
+you and The Qt Company. Alternatively, the terms and conditions that were
+accepted by the licensee when buying and/or downloading the
+software do apply.
+
+For the latest licensing terms and conditions, see https://www.qt.io/terms-conditions.
+For further information use the contact form at https://www.qt.io/contact-us.
+</text>

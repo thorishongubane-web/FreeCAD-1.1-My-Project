@@ -1,0 +1,11 @@
+prefix=D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library
+exec_prefix=D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library
+libdir=D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/lib
+includedir=D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/include
+
+Name: Graphite2
+Description: Font rendering engine for Complex Scripts
+Version: 3.0.1
+Libs: -LD:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/lib -lgraphite2
+Cflags: -ID:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/include
+

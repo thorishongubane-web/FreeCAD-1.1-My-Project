@@ -1,0 +1,12 @@
+prefix=D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library
+exec_prefix=D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library
+libdir=D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/lib
+includedir=D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/include/shiboken6
+python_interpreter=D:\bld\pyside6_1743272616591\_h_env\python.exe
+python_include_dir=D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Include
+
+Name: shiboken6
+Description: Support library for Python bindings created with the Shiboken6 generator.
+Version: 6.8.3
+Libs:  -L${libdir} -lshiboken6.cp311-win_amd64
+Cflags: -ID:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Include -I${includedir}/

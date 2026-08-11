@@ -1,0 +1,16 @@
+prefix=D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library
+includedir=${prefix}/include
+libdir=${prefix}/lib
+
+sysconfdir=D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/etc
+localstatedir=D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/var
+confdir=D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/etc/fonts
+cachedir=LOCAL_APPDATA_FONTCONFIG_CACHE
+
+Name: Fontconfig
+Description: Font configuration and customization library
+Version: 2.15.0
+Requires: freetype2 >=  21.0.15
+Libs: -L${libdir} -lfontconfig
+Libs.private: D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/lib/expat.lib
+Cflags: -I${includedir}

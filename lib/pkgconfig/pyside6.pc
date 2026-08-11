@@ -1,0 +1,14 @@
+prefix=D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library
+exec_prefix=D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library
+libdir=lib
+includedir=D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/include/PySide6
+typesystemdir=D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/share/PySide6/typesystems
+gluedir=D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/share/PySide6/glue
+pythonpath=D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Lib/site-packages
+
+Name: PySide6
+Description: Support library for Python bindings of Qt5-based libraries.
+Version: 6.8.3
+Libs: -L${libdir} -lpyside6.cp311-win_amd64
+Cflags: -I${includedir}
+Requires: shiboken6

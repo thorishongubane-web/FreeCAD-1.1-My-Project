@@ -1,0 +1,14 @@
+prefix=D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library
+exec_prefix=${prefix}
+libdir=D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/lib
+includedir=D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/include
+
+Name: libavformat
+Description: FFmpeg container format library
+Version: 61.7.100
+Requires: 
+Requires.private: libavcodec >= 61.19.101, libswresample >= 5.3.100, libavutil >= 59.39.100
+Conflicts:
+Libs: -L${libdir}  -lavformat 
+Libs.private: -LD:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/lib xml2.lib iconv.lib zlib.lib bz2.lib -LD:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/lib zlib.lib -LD:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/lib libssl.lib libcrypto.lib crypt32.lib ws2_32.lib ws2_32.lib
+Cflags: -I${includedir}

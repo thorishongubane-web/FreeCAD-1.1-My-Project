@@ -1,0 +1,13 @@
+libdir=D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/lib
+libnameprefix=
+libnamesuffix=
+libsuffix=
+includedir=D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/include/openblas
+
+openblas_config=USE_64BITINT= NO_CBLAS= NO_LAPACK= NO_LAPACKE= DYNAMIC_ARCH=ON DYNAMIC_OLDER=OFF NO_AFFINITY=1 USE_OPENMP=0 ZEN MAX_THREADS=128 
+Name: OpenBLAS
+Description: OpenBLAS is an optimized BLAS library based on GotoBLAS2 1.13 BSD version
+Version: 0.3.30
+URL: https://github.com/OpenMathLib/OpenBLAS
+Libs: -L${libdir} -l${libnameprefix}openblas${libnamesuffix}${libsuffix} 
+Cflags: -I${includedir}  

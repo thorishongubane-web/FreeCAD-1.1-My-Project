@@ -1,0 +1,11 @@
+prefix=D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library 
+exec_prefix=D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library 
+libdir=D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/lib 
+includedir=D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/include 
+modules=0 
+Name: libXML 
+Version: 2.13.9 
+Description: libXML library version2. 
+Requires: 
+Libs: -LD:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/lib -lxml2 -liconv -lz 
+Cflags: -ID:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/include/libxml2 -ID:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/include 

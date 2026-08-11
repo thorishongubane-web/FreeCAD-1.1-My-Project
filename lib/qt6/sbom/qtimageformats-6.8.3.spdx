@@ -1,0 +1,283 @@
+SPDXVersion: SPDX-2.3
+DataLicense: CC0-1.0
+SPDXID: SPDXRef-DOCUMENT
+DocumentName: qtimageformats-6.8.3
+DocumentNamespace: https://qt.io/spdxdocs/qtimageformats-6.8.3
+Creator: Organization: TheQtCompany
+Creator: Tool: Qt Build System
+CreatorComment: <text>This SPDX document was created from CMake 4.0.3, using the qt
+build system from https://code.qt.io/cgit/qt/qtbase.git/tree/cmake/QtPublicSbomHelpers.cmake</text>
+Created: 2025-06-26T05:40:33Z
+ExternalDocumentRef: DocumentRef-qtbase https://qt.io/spdxdocs/qtbase-6.8.3 SHA1: 12de1d7f636830e21096a2fc32613ca8f580d2f3
+
+PackageName: MSVC
+SPDXID: SPDXRef-compiler
+PackageVersion: 19.43.34808.0
+PackageDownloadLocation: NOASSERTION
+PackageLicenseConcluded: NOASSERTION
+PackageLicenseDeclared: NOASSERTION
+PackageCopyrightText: NOASSERTION
+PackageSupplier: Organization: Anonymous
+FilesAnalyzed: false
+PackageSummary: <text>The compiler as identified by CMake, running on Windows (AMD64)</text>
+PrimaryPackagePurpose: APPLICATION
+Relationship: SPDXRef-compiler BUILD_DEPENDENCY_OF SPDXRef-Package-qtimageformats
+RelationshipComment: <text>SPDXRef-Package-qtimageformats is built by compiler MSVC version 19.43.34808.0</text>
+
+PackageName: qtimageformats
+SPDXID: SPDXRef-Package-qtimageformats
+ExternalRef: SECURITY cpe23Type cpe:2.3:a:qt:qt:6.8.3:*:*:*:*:*:*:*
+ExternalRef: PACKAGE-MANAGER purl pkg:generic/TheQtCompany/qtimageformats@6.8.3
+PackageVersion: 6.8.3
+PackageSupplier: Organization: TheQtCompany
+PackageDownloadLocation: git://code.qt.io/qt/qtimageformats.git
+PackageLicenseConcluded: NOASSERTION
+PackageLicenseDeclared: NOASSERTION
+PackageCopyrightText: Copyright (C) The Qt Company Ltd. and other contributors.
+PackageHomePage: https://qt.io
+PackageComment: <text>Built by CMake 4.0.3 with Release configuration for Windows (AMD64)</text>
+PackageVerificationCode: 9e69dd5e5ed2c685c0c744a54b6ed1df5af94443
+BuiltDate: 2025-06-26T05:40:33Z
+Relationship: SPDXRef-DOCUMENT DESCRIBES SPDXRef-Package-qtimageformats
+
+PackageName: QTgaPlugin
+SPDXID: SPDXRef-Package-qtimageformats-qt-plugin-QTgaPlugin
+PackageDownloadLocation: git://code.qt.io/qt/qtimageformats.git
+PackageVersion: 6.8.3
+PackageSupplier: Organization: TheQtCompany
+PackageLicenseConcluded: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+PackageLicenseDeclared: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+ExternalRef: PACKAGE-MANAGER purl pkg:github/qt/qtimageformats?library_name=QTgaPlugin#src/plugins/imageformats/tga
+ExternalRef: PACKAGE-MANAGER purl pkg:generic/TheQtCompany/qtimageformats-QTgaPlugin?vcs_url=https://code.qt.io/qt/qtimageformats.git&library_name=QTgaPlugin#src/plugins/imageformats/tga
+FilesAnalyzed: true
+PackageCopyrightText: <text>Copyright (C) The Qt Company Ltd. and other contributors.</text>
+PrimaryPackagePurpose: LIBRARY
+PackageComment: <text>
+CMake target name: QTgaPlugin
+</text>
+ExternalRef: SECURITY cpe23Type cpe:2.3:a:qt:qtimageformats:6.8.3:*:*:*:*:*:*:*
+ExternalRef: SECURITY cpe23Type cpe:2.3:a:qt:qt:6.8.3:*:*:*:*:*:*:*
+Relationship: SPDXRef-Package-qtimageformats-qt-plugin-QTgaPlugin DEPENDS_ON DocumentRef-qtbase:SPDXRef-Package-qtbase-qt-module-Core
+Relationship: SPDXRef-Package-qtimageformats-qt-plugin-QTgaPlugin DEPENDS_ON DocumentRef-qtbase:SPDXRef-Package-qtbase-qt-module-Gui
+Relationship: SPDXRef-Package-qtimageformats-qt-plugin-QTgaPlugin DEPENDS_ON DocumentRef-qtbase:SPDXRef-Package-qtbase-qt-module-PlatformPluginInternal
+Relationship: SPDXRef-Package-qtimageformats CONTAINS SPDXRef-Package-qtimageformats-qt-plugin-QTgaPlugin
+
+FileName: ./lib/qt6/plugins/imageformats/qtga.dll
+SPDXID: SPDXRef-PackagedFile-qt-plugin-QTgaPlugin
+FileType: BINARY
+FileChecksum: SHA1: 732a4210738827191b3cde7e40f442796666fbc2
+LicenseConcluded: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+FileCopyrightText: <text>Copyright (C) The Qt Company Ltd. and other contributors.</text>
+LicenseInfoInFile: NOASSERTION
+Relationship: SPDXRef-Package-qtimageformats-qt-plugin-QTgaPlugin CONTAINS SPDXRef-PackagedFile-qt-plugin-QTgaPlugin
+Relationship: SPDXRef-PackagedFile-qt-plugin-QTgaPlugin GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtimageformats/src/plugins/imageformats/tga/main.cpp
+Relationship: SPDXRef-PackagedFile-qt-plugin-QTgaPlugin GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtimageformats/src/plugins/imageformats/tga/qtgafile.cpp
+Relationship: SPDXRef-PackagedFile-qt-plugin-QTgaPlugin GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtimageformats/src/plugins/imageformats/tga/qtgafile.h
+Relationship: SPDXRef-PackagedFile-qt-plugin-QTgaPlugin GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtimageformats/src/plugins/imageformats/tga/qtgahandler.cpp
+Relationship: SPDXRef-PackagedFile-qt-plugin-QTgaPlugin GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtimageformats/src/plugins/imageformats/tga/qtgahandler.h
+Relationship: SPDXRef-PackagedFile-qt-plugin-QTgaPlugin GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtimageformats/src/plugins/imageformats/tga/C:/bld/qt6-main_1750915145827/work/build/qtimageformats/src/plugins/imageformats/tga/QTgaPlugin_resource.rc
+
+PackageName: QWbmpPlugin
+SPDXID: SPDXRef-Package-qtimageformats-qt-plugin-QWbmpPlugin
+PackageDownloadLocation: git://code.qt.io/qt/qtimageformats.git
+PackageVersion: 6.8.3
+PackageSupplier: Organization: TheQtCompany
+PackageLicenseConcluded: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+PackageLicenseDeclared: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+ExternalRef: PACKAGE-MANAGER purl pkg:github/qt/qtimageformats?library_name=QWbmpPlugin#src/plugins/imageformats/wbmp
+ExternalRef: PACKAGE-MANAGER purl pkg:generic/TheQtCompany/qtimageformats-QWbmpPlugin?vcs_url=https://code.qt.io/qt/qtimageformats.git&library_name=QWbmpPlugin#src/plugins/imageformats/wbmp
+FilesAnalyzed: true
+PackageCopyrightText: <text>Copyright (C) The Qt Company Ltd. and other contributors.</text>
+PrimaryPackagePurpose: LIBRARY
+PackageComment: <text>
+CMake target name: QWbmpPlugin
+</text>
+ExternalRef: SECURITY cpe23Type cpe:2.3:a:qt:qtimageformats:6.8.3:*:*:*:*:*:*:*
+ExternalRef: SECURITY cpe23Type cpe:2.3:a:qt:qt:6.8.3:*:*:*:*:*:*:*
+Relationship: SPDXRef-Package-qtimageformats-qt-plugin-QWbmpPlugin DEPENDS_ON DocumentRef-qtbase:SPDXRef-Package-qtbase-qt-module-Core
+Relationship: SPDXRef-Package-qtimageformats-qt-plugin-QWbmpPlugin DEPENDS_ON DocumentRef-qtbase:SPDXRef-Package-qtbase-qt-module-Gui
+Relationship: SPDXRef-Package-qtimageformats-qt-plugin-QWbmpPlugin DEPENDS_ON DocumentRef-qtbase:SPDXRef-Package-qtbase-qt-module-PlatformPluginInternal
+Relationship: SPDXRef-Package-qtimageformats CONTAINS SPDXRef-Package-qtimageformats-qt-plugin-QWbmpPlugin
+
+FileName: ./lib/qt6/plugins/imageformats/qwbmp.dll
+SPDXID: SPDXRef-PackagedFile-qt-plugin-QWbmpPlugin
+FileType: BINARY
+FileChecksum: SHA1: bf6d4c2f78c3b0b43e000e986418a0a8452a8ecd
+LicenseConcluded: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+FileCopyrightText: <text>Copyright (C) The Qt Company Ltd. and other contributors.</text>
+LicenseInfoInFile: NOASSERTION
+Relationship: SPDXRef-Package-qtimageformats-qt-plugin-QWbmpPlugin CONTAINS SPDXRef-PackagedFile-qt-plugin-QWbmpPlugin
+Relationship: SPDXRef-PackagedFile-qt-plugin-QWbmpPlugin GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtimageformats/src/plugins/imageformats/wbmp/main.cpp
+Relationship: SPDXRef-PackagedFile-qt-plugin-QWbmpPlugin GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtimageformats/src/plugins/imageformats/wbmp/qwbmphandler.cpp
+Relationship: SPDXRef-PackagedFile-qt-plugin-QWbmpPlugin GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtimageformats/src/plugins/imageformats/wbmp/qwbmphandler_p.h
+Relationship: SPDXRef-PackagedFile-qt-plugin-QWbmpPlugin GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtimageformats/src/plugins/imageformats/wbmp/C:/bld/qt6-main_1750915145827/work/build/qtimageformats/src/plugins/imageformats/wbmp/QWbmpPlugin_resource.rc
+
+PackageName: QTiffPlugin
+SPDXID: SPDXRef-Package-qtimageformats-qt-plugin-QTiffPlugin
+PackageDownloadLocation: git://code.qt.io/qt/qtimageformats.git
+PackageVersion: 6.8.3
+PackageSupplier: Organization: TheQtCompany
+PackageLicenseConcluded: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+PackageLicenseDeclared: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+ExternalRef: PACKAGE-MANAGER purl pkg:github/qt/qtimageformats?library_name=QTiffPlugin#src/plugins/imageformats/tiff
+ExternalRef: PACKAGE-MANAGER purl pkg:generic/TheQtCompany/qtimageformats-QTiffPlugin?vcs_url=https://code.qt.io/qt/qtimageformats.git&library_name=QTiffPlugin#src/plugins/imageformats/tiff
+FilesAnalyzed: true
+PackageCopyrightText: <text>Copyright (C) The Qt Company Ltd. and other contributors.</text>
+PrimaryPackagePurpose: LIBRARY
+PackageComment: <text>
+CMake target name: QTiffPlugin
+</text>
+ExternalRef: SECURITY cpe23Type cpe:2.3:a:qt:qtimageformats:6.8.3:*:*:*:*:*:*:*
+ExternalRef: SECURITY cpe23Type cpe:2.3:a:qt:qt:6.8.3:*:*:*:*:*:*:*
+Relationship: SPDXRef-Package-qtimageformats-qt-plugin-QTiffPlugin DEPENDS_ON DocumentRef-qtbase:SPDXRef-Package-qtbase-qt-module-Core
+Relationship: SPDXRef-Package-qtimageformats-qt-plugin-QTiffPlugin DEPENDS_ON DocumentRef-qtbase:SPDXRef-Package-qtbase-qt-module-Gui
+Relationship: SPDXRef-Package-qtimageformats-qt-plugin-QTiffPlugin DEPENDS_ON DocumentRef-qtbase:SPDXRef-Package-qtbase-qt-module-PlatformPluginInternal
+Relationship: SPDXRef-Package-qtimageformats-qt-plugin-QTiffPlugin DEPENDS_ON SPDXRef-Package-qtimageformats-system-3rdparty-TIFF
+Relationship: SPDXRef-Package-qtimageformats CONTAINS SPDXRef-Package-qtimageformats-qt-plugin-QTiffPlugin
+
+FileName: ./lib/qt6/plugins/imageformats/qtiff.dll
+SPDXID: SPDXRef-PackagedFile-qt-plugin-QTiffPlugin
+FileType: BINARY
+FileChecksum: SHA1: 7d42095660f3cfcdee9128a53347cb3f25d8c66c
+LicenseConcluded: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+FileCopyrightText: <text>Copyright (C) The Qt Company Ltd. and other contributors.</text>
+LicenseInfoInFile: NOASSERTION
+Relationship: SPDXRef-Package-qtimageformats-qt-plugin-QTiffPlugin CONTAINS SPDXRef-PackagedFile-qt-plugin-QTiffPlugin
+Relationship: SPDXRef-PackagedFile-qt-plugin-QTiffPlugin GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtimageformats/src/plugins/imageformats/tiff/main.cpp
+Relationship: SPDXRef-PackagedFile-qt-plugin-QTiffPlugin GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtimageformats/src/plugins/imageformats/tiff/qtiffhandler.cpp
+Relationship: SPDXRef-PackagedFile-qt-plugin-QTiffPlugin GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtimageformats/src/plugins/imageformats/tiff/qtiffhandler_p.h
+Relationship: SPDXRef-PackagedFile-qt-plugin-QTiffPlugin GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtimageformats/src/plugins/imageformats/tiff/C:/bld/qt6-main_1750915145827/work/build/qtimageformats/src/plugins/imageformats/tiff/QTiffPlugin_resource.rc
+
+PackageName: QWebpPlugin
+SPDXID: SPDXRef-Package-qtimageformats-qt-plugin-QWebpPlugin
+PackageDownloadLocation: git://code.qt.io/qt/qtimageformats.git
+PackageVersion: 6.8.3
+PackageSupplier: Organization: TheQtCompany
+PackageLicenseConcluded: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+PackageLicenseDeclared: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+ExternalRef: PACKAGE-MANAGER purl pkg:github/qt/qtimageformats?library_name=QWebpPlugin#src/plugins/imageformats/webp
+ExternalRef: PACKAGE-MANAGER purl pkg:generic/TheQtCompany/qtimageformats-QWebpPlugin?vcs_url=https://code.qt.io/qt/qtimageformats.git&library_name=QWebpPlugin#src/plugins/imageformats/webp
+FilesAnalyzed: true
+PackageCopyrightText: <text>Copyright (C) The Qt Company Ltd. and other contributors.</text>
+PrimaryPackagePurpose: LIBRARY
+PackageComment: <text>
+CMake target name: QWebpPlugin
+</text>
+ExternalRef: SECURITY cpe23Type cpe:2.3:a:qt:qtimageformats:6.8.3:*:*:*:*:*:*:*
+ExternalRef: SECURITY cpe23Type cpe:2.3:a:qt:qt:6.8.3:*:*:*:*:*:*:*
+Relationship: SPDXRef-Package-qtimageformats-qt-plugin-QWebpPlugin DEPENDS_ON DocumentRef-qtbase:SPDXRef-Package-qtbase-qt-module-Core
+Relationship: SPDXRef-Package-qtimageformats-qt-plugin-QWebpPlugin DEPENDS_ON DocumentRef-qtbase:SPDXRef-Package-qtbase-qt-module-Gui
+Relationship: SPDXRef-Package-qtimageformats-qt-plugin-QWebpPlugin DEPENDS_ON DocumentRef-qtbase:SPDXRef-Package-qtbase-qt-module-PlatformPluginInternal
+Relationship: SPDXRef-Package-qtimageformats-qt-plugin-QWebpPlugin DEPENDS_ON SPDXRef-Package-qtimageformats-system-3rdparty-WrapWebP
+Relationship: SPDXRef-Package-qtimageformats CONTAINS SPDXRef-Package-qtimageformats-qt-plugin-QWebpPlugin
+
+FileName: ./lib/qt6/plugins/imageformats/qwebp.dll
+SPDXID: SPDXRef-PackagedFile-qt-plugin-QWebpPlugin
+FileType: BINARY
+FileChecksum: SHA1: cf1d1b62ed6c215ab321e2fb74a59af853999a88
+LicenseConcluded: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+FileCopyrightText: <text>Copyright (C) The Qt Company Ltd. and other contributors.</text>
+LicenseInfoInFile: NOASSERTION
+Relationship: SPDXRef-Package-qtimageformats-qt-plugin-QWebpPlugin CONTAINS SPDXRef-PackagedFile-qt-plugin-QWebpPlugin
+Relationship: SPDXRef-PackagedFile-qt-plugin-QWebpPlugin GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtimageformats/src/plugins/imageformats/webp/main.cpp
+Relationship: SPDXRef-PackagedFile-qt-plugin-QWebpPlugin GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtimageformats/src/plugins/imageformats/webp/qwebphandler.cpp
+Relationship: SPDXRef-PackagedFile-qt-plugin-QWebpPlugin GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtimageformats/src/plugins/imageformats/webp/qwebphandler_p.h
+Relationship: SPDXRef-PackagedFile-qt-plugin-QWebpPlugin GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtimageformats/src/plugins/imageformats/webp/C:/bld/qt6-main_1750915145827/work/build/qtimageformats/src/plugins/imageformats/webp/QWebpPlugin_resource.rc
+
+PackageName: QICNSPlugin
+SPDXID: SPDXRef-Package-qtimageformats-qt-plugin-QICNSPlugin
+PackageDownloadLocation: git://code.qt.io/qt/qtimageformats.git
+PackageVersion: 6.8.3
+PackageSupplier: Organization: TheQtCompany
+PackageLicenseConcluded: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+PackageLicenseDeclared: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+ExternalRef: PACKAGE-MANAGER purl pkg:github/qt/qtimageformats?library_name=QICNSPlugin#src/plugins/imageformats/icns
+ExternalRef: PACKAGE-MANAGER purl pkg:generic/TheQtCompany/qtimageformats-QICNSPlugin?vcs_url=https://code.qt.io/qt/qtimageformats.git&library_name=QICNSPlugin#src/plugins/imageformats/icns
+FilesAnalyzed: true
+PackageCopyrightText: <text>Copyright (C) The Qt Company Ltd. and other contributors.</text>
+PrimaryPackagePurpose: LIBRARY
+PackageComment: <text>
+CMake target name: QICNSPlugin
+</text>
+ExternalRef: SECURITY cpe23Type cpe:2.3:a:qt:qtimageformats:6.8.3:*:*:*:*:*:*:*
+ExternalRef: SECURITY cpe23Type cpe:2.3:a:qt:qt:6.8.3:*:*:*:*:*:*:*
+Relationship: SPDXRef-Package-qtimageformats-qt-plugin-QICNSPlugin DEPENDS_ON DocumentRef-qtbase:SPDXRef-Package-qtbase-qt-module-Core
+Relationship: SPDXRef-Package-qtimageformats-qt-plugin-QICNSPlugin DEPENDS_ON DocumentRef-qtbase:SPDXRef-Package-qtbase-qt-module-Gui
+Relationship: SPDXRef-Package-qtimageformats-qt-plugin-QICNSPlugin DEPENDS_ON DocumentRef-qtbase:SPDXRef-Package-qtbase-qt-module-PlatformPluginInternal
+Relationship: SPDXRef-Package-qtimageformats CONTAINS SPDXRef-Package-qtimageformats-qt-plugin-QICNSPlugin
+
+FileName: ./lib/qt6/plugins/imageformats/qicns.dll
+SPDXID: SPDXRef-PackagedFile-qt-plugin-QICNSPlugin
+FileType: BINARY
+FileChecksum: SHA1: 27fe5c0773dd2925bff48193bfc8b340e3ad910d
+LicenseConcluded: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+FileCopyrightText: <text>Copyright (C) The Qt Company Ltd. and other contributors.</text>
+LicenseInfoInFile: NOASSERTION
+Relationship: SPDXRef-Package-qtimageformats-qt-plugin-QICNSPlugin CONTAINS SPDXRef-PackagedFile-qt-plugin-QICNSPlugin
+Relationship: SPDXRef-PackagedFile-qt-plugin-QICNSPlugin GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtimageformats/src/plugins/imageformats/icns/main.cpp
+Relationship: SPDXRef-PackagedFile-qt-plugin-QICNSPlugin GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtimageformats/src/plugins/imageformats/icns/qicnshandler.cpp
+Relationship: SPDXRef-PackagedFile-qt-plugin-QICNSPlugin GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtimageformats/src/plugins/imageformats/icns/qicnshandler_p.h
+Relationship: SPDXRef-PackagedFile-qt-plugin-QICNSPlugin GENERATED_FROM NOASSERTION
+RelationshipComment: /src_dir/qtimageformats/src/plugins/imageformats/icns/C:/bld/qt6-main_1750915145827/work/build/qtimageformats/src/plugins/imageformats/icns/QICNSPlugin_resource.rc
+
+PackageName: TIFF
+SPDXID: SPDXRef-Package-qtimageformats-system-3rdparty-TIFF
+PackageDownloadLocation: NOASSERTION
+PackageVersion: 4.7.0
+PackageSupplier: Person: Anonymous
+PackageLicenseConcluded: NOASSERTION
+PackageLicenseDeclared: NOASSERTION
+FilesAnalyzed: true
+PackageCopyrightText: NOASSERTION
+PrimaryPackagePurpose: LIBRARY
+PackageComment: <text>
+CMake target name: TIFF::TIFF
+</text>
+Relationship: SPDXRef-Package-qtimageformats CONTAINS SPDXRef-Package-qtimageformats-system-3rdparty-TIFF
+
+PackageName: WrapWebP
+SPDXID: SPDXRef-Package-qtimageformats-system-3rdparty-WrapWebP
+PackageDownloadLocation: NOASSERTION
+PackageVersion: unknown
+PackageSupplier: Person: Anonymous
+PackageLicenseConcluded: NOASSERTION
+PackageLicenseDeclared: NOASSERTION
+FilesAnalyzed: true
+PackageCopyrightText: NOASSERTION
+PrimaryPackagePurpose: LIBRARY
+PackageComment: <text>
+CMake target name: WrapWebP::WrapWebP
+</text>
+Relationship: SPDXRef-Package-qtimageformats CONTAINS SPDXRef-Package-qtimageformats-system-3rdparty-WrapWebP
+
+LicenseID: LicenseRef-Qt-Commercial
+ExtractedText: <text>Licensees holding valid commercial Qt licenses may use this software in
+accordance with the the terms contained in a written agreement between
+you and The Qt Company. Alternatively, the terms and conditions that were
+accepted by the licensee when buying and/or downloading the
+software do apply.
+
+For the latest licensing terms and conditions, see https://www.qt.io/terms-conditions.
+For further information use the contact form at https://www.qt.io/contact-us.
+</text>

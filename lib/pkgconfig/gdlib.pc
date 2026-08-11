@@ -1,0 +1,10 @@
+prefix=D:bldibgd_1737547895537_h_envibrary
+libdir=D:bldibgd_1737547895537_h_envibrary/lib
+includedir=D:bldibgd_1737547895537_h_envibrary/include
+
+Name: gd
+Description: GD graphics library
+Version: 2.3.3
+Requires:
+Cflags: -I${includedir}
+Libs: -L${libdir} -lgd

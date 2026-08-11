@@ -1,0 +1,14 @@
+prefix=D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library
+exec_prefix=${prefix}
+libdir=D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/lib
+includedir=D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/include
+
+Name: libavcodec
+Description: FFmpeg codec library
+Version: 61.19.101
+Requires: 
+Requires.private: libswresample >= 5.3.100, libavutil >= 59.39.100
+Conflicts:
+Libs: -L${libdir}  -lavcodec 
+Libs.private: iconv.lib lzma.lib -LD:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/lib dav1d.lib -LD:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/lib rsvg-2.0.lib cairo.lib gdk_pixbuf-2.0.lib intl.lib D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/lib/libpng.lib D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/lib/z.lib D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/lib/jpeg.lib D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/lib/tiff.lib D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/lib/libpng.lib D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/lib/z.lib D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/lib/jpeg.lib D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/lib/tiff.lib gio-2.0.lib iconv.lib shlwapi.lib dnsapi.lib iphlpapi.lib ws2_32.lib gmodule-2.0.lib iconv.lib gobject-2.0.lib iconv.lib ffi.lib glib-2.0.lib iconv.lib ws2_32.lib winmm.lib pcre2-8.lib cairo.lib gdi32.lib msimg32.lib dwrite.lib d2d1.lib windowscodecs.lib fontconfig.lib D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/lib/expat.lib freetype.lib png16.lib zlib.lib pixman-1.lib -LD:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/lib aom.lib mp3lame.lib -LD:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/lib opus.lib -LD:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/lib SvtAv1Enc.lib -LD:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/lib vorbis.lib ogg.lib -LD:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/lib vorbisenc.lib vorbis.lib ogg.lib -LD:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/lib libx264.lib -LD:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/lib x265.lib -LD:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/lib openh264.lib mfuuid.lib ole32.lib strmiids.lib ole32.lib user32.lib -LD:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/lib zlib.lib
+Cflags: -I${includedir}

@@ -1,0 +1,14 @@
+prefix=D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library
+exec_prefix=${prefix}
+libdir=D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/lib
+includedir=D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/include
+
+Name: libavutil
+Description: FFmpeg utility library
+Version: 59.39.100
+Requires: 
+Requires.private: 
+Conflicts:
+Libs: -L${libdir}  -lavutil 
+Libs.private: -LD:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library/lib libssl.lib libcrypto.lib crypt32.lib ws2_32.lib user32.lib bcrypt.lib
+Cflags: -I${includedir}

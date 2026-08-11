@@ -1,0 +1,12 @@
+prefix=D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library
+includedir=${prefix}/include
+libdir=${prefix}/lib
+
+Name: harfbuzz-cairo
+Description: HarfBuzz cairo support
+Version: 11.4.5
+Requires: harfbuzz =  11.4.5
+Requires.private: freetype2 >=  12.0.6, glib-2.0 >=  2.30.0, graphite2 >=  1.2.0, cairo >=  1.10.0
+Libs: -L${libdir} -lharfbuzz-cairo
+Libs.private: -L${libdir} -lharfbuzz -lusp10 -lgdi32 -lrpcrt4 -luser32
+Cflags: -I${includedir}/harfbuzz

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!-- NOTE: The Addon Manager still uses the original xmlns entry so that older versions of FreeCAD can upgrade
+ to the newest Addon Manager. This can be changed when FreeCAD v1.0 is no longer supported. -->
+<package format="1" xmlns="https://wiki.freecad.org/Package_Metadata">
+    <name>Addon Manager</name>
+    <description>Tool to install workbenches, macros, themes, etc.</description>
+    <icon>Resources/icons/addon_manager.svg</icon>
+    <version>2026.2.19</version>
+    <date>2026-02-19</date>
+    <maintainer email='chennes@freecad.org'>Chris Hennes</maintainer>
+    <author email = 'yorik@uncreated.net'>Yorik van Havre</author>
+    <author>Jonathan Wiedemann</author>
+    <author>Kurt Kremitzki</author>
+    <license file="LICENSE">LGPL-2.1-or-later</license>
+    <url type='repository' branch='main'>https://github.com/FreeCAD/AddonManager</url>
+    <url type='bugtracker'>https://github.com/FreeCAD/AddonManager/issues</url>
+    <url type='readme'>https://github.com/FreeCAD/AddonManager/blob/main/README.md</url>
+
+    <content>
+        <workbench>
+            <!-- Even though the Addon Manager is not a workbench, it declares itself as one so that versions of
+            FreeCAD prior to 1.1 can see the InitGui.py file and run it. -->
+            <name>AddonManager</name>
+            <subdirectory>./</subdirectory>
+        </workbench>
+    </content>
+</package>

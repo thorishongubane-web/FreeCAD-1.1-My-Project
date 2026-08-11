@@ -1,0 +1,9 @@
+prefix=D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library
+includedir=${prefix}/include
+libdir=${prefix}/lib
+
+Name: Pixman
+Description: The pixman library (version 1)
+Version: 0.46.4
+Libs: -L${libdir} -lpixman-1
+Cflags: -I${includedir}/pixman-1

@@ -1,0 +1,14 @@
+prefix=D:/a/FreeCAD/FreeCAD/package/rattler-build/.pixi/envs/default/Library
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: hdf
+Description: HDF (Hierarchical Data Format 4) Software Library
+Version: 4.2.15
+
+Cflags: -I${includedir}
+Libs: -L${libdir}  -lhdf -lmfhdf
+Requires: 
+Libs.private:  -lD:\bld\hdf4_1695661466968\_h_env\Library\lib\jpeg.lib -lD:\bld\hdf4_1695661466968\_h_env\Library\lib\zlibstatic.lib  -lhdf -lmfhdf
+Requires.private: 
