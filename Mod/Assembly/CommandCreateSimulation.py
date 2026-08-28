@@ -849,6 +849,7 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
         self.assistantLayout.addWidget(self.assistantButtonNo)
 
         self.highlightAxisButton = QtWidgets.QPushButton("Highlight Axis")
+        self.RecheckButton = QtWidgets.QPushButton("Recheck assembly")
 
         self.axisYesButton = QtWidgets.QPushButton("✓ Yes")
 
@@ -858,7 +859,12 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
             self.onAssistantButton
         )
 
+        self.RecheckButton.clicked.connect(
+                    self.RecheckAssembly
+                )
+
         self.assistantLayout.addWidget(self.highlightAxisButton)
+        self.assistantLayout.addWidget(self.RecheckButton)
 
         assistantGroup.setLayout(self.assistantLayout)
 
@@ -917,110 +923,111 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
         revolute = 0
         fixed = 0
         slider = 0
-        grounded = 0
 
-        # --------------------------------------------------
         # Reset detected bodies
-        # --------------------------------------------------
-
         self.groundedBody = None
         self.movingBody = None
 
+        App.Console.PrintMessage("\n=== Starting Assembly Analysis ===\n")
+
         # --------------------------------------------------
-        # Analyse assembly
+        # 1. Collect all components in active assembly
         # --------------------------------------------------
+        for obj in self.doc.Objects:
+            is_component = (
+                obj.isDerivedFrom("PartDesign::Body") or 
+                obj.isDerivedFrom("App::Part") or 
+                obj.isDerivedFrom("App::Link")
+            )
+
+            if is_component and (
+                (hasattr(obj, "getParentGeoFeatureGroup") and obj.getParentGeoFeatureGroup() == self.assembly) or 
+                (hasattr(self.assembly, "Group") and obj in self.assembly.Group)
+            ):
+                bodies.append(obj)
+                App.Console.PrintMessage(f"Found Component: {obj.Label} ({obj.Name})\n")
+
+        # --------------------------------------------------
+        # 2. Extract Grounded Objects and count Joints
+        # --------------------------------------------------
+        # DEBUG: Print all objects and their properties
+        App.Console.PrintMessage("\n=== DEBUG: Searching for Joints ===\n")
+        for obj in self.doc.Objects:
+            # Print basic info
+            App.Console.PrintMessage(f"Object: {obj.Name} ({obj.Label})")
+            App.Console.PrintMessage(f"  TypeId: {obj.TypeId}")
+            
+            # Print all properties that might relate to joints
+            for prop in dir(obj):
+                if "Joint" in prop or "joint" in prop or "Type" in prop:
+                    try:
+                        val = getattr(obj, prop)
+                        App.Console.PrintMessage(f"  {prop}: {val}")
+                    except:
+                        pass
+            App.Console.PrintMessage("---")
+        
+        grounded_objects = set()
 
         for obj in self.doc.Objects:
+            is_grounded_joint = (
+                "Grounded" in obj.Name or 
+                "Grounded" in str(getattr(obj, "TypeId", "")) or
+                getattr(obj, "JointType", "") in ["Grounded", "Fixed"]
+            )
 
-            # ----------------------------------------------
-            # Count bodies
-            # ----------------------------------------------
+            if is_grounded_joint:
+                for prop in ["ObjectToGround", "DataObjectToGround", "Target"]:
+                    target = getattr(obj, prop, None)
+                    if target:
+                        grounded_objects.add(target)
 
-            if obj.isDerivedFrom("PartDesign::Body"):
-
-                bodies.append(obj)
-
-                App.Console.PrintMessage(
-                    f"\n===== {obj.Name} =====\n"
-                )
-
-                for prop in obj.PropertiesList:
-
-                    try:
-                        value = obj.getPropertyByName(prop)
-                    except Exception:
-                        value = "<error>"
-
-                    App.Console.PrintMessage(
-                        f"{prop} = {value}\n"
-                    )
-
-                # ------------------------------------------
-                # Detect grounded body
-                # ------------------------------------------
-
-                try:
-
-                    if obj.getParentGeoFeatureGroup() == self.assembly:
-
-                        if obj.MapMode == "Deactivated":
-
-                            grounded += 1
-                            self.groundedBody = obj
-
-                except Exception:
-                    pass
-
-            # ----------------------------------------------
-            # Count joints
-            # ----------------------------------------------
+                ref1 = getattr(obj, "Reference1", None)
+                if ref1:
+                    if isinstance(ref1, (list, tuple)) and len(ref1) > 0:
+                        elem = ref1[0]
+                        if isinstance(elem, (list, tuple)) and len(elem) > 0:
+                            grounded_objects.add(elem[0])
+                        else:
+                            grounded_objects.add(elem)
 
             if hasattr(obj, "JointType"):
-
                 if obj.JointType == "Revolute":
                     revolute += 1
-
                 elif obj.JointType == "Fixed":
                     fixed += 1
-
                 elif obj.JointType == "Slider":
                     slider += 1
 
         # --------------------------------------------------
-        # Identify moving body
+        # 3. Match Grounded Objects to Assembly Components
         # --------------------------------------------------
+        grounded_count = 0
 
         for body in bodies:
+            linked_obj = getattr(body, "LinkedObject", None)
+            
+            if body in grounded_objects or (linked_obj and linked_obj in grounded_objects):
+                grounded_count += 1
+                if self.groundedBody is None:
+                    self.groundedBody = body
 
+        for body in bodies:
             if body != self.groundedBody:
-
                 self.movingBody = body
                 break
 
-        # --------------------------------------------------
-        # Number of moving bodies
-        # --------------------------------------------------
+        moving_count = max(0, len(bodies) - grounded_count)
 
-        moving = len(bodies) - grounded
-
-        # --------------------------------------------------
-        # Debug
-        # --------------------------------------------------
-
-        App.Console.PrintMessage(
-            f"\nGrounded Body : "
-            f"{self.groundedBody.Name if self.groundedBody else 'None'}\n"
-        )
-
-        App.Console.PrintMessage(
-            f"Moving Body : "
-            f"{self.movingBody.Name if self.movingBody else 'None'}\n"
-        )
+        # Clean Console Summary
+        App.Console.PrintMessage(f"Total Bodies: {len(bodies)}\n")
+        App.Console.PrintMessage(f"Grounded Body: {self.groundedBody.Label if self.groundedBody else 'None'}\n")
+        App.Console.PrintMessage(f"Moving Body: {self.movingBody.Label if self.movingBody else 'None'}\n")
+        App.Console.PrintMessage("=== Analysis Complete ===\n\n")
 
         # --------------------------------------------------
-        # Assistant
+        # 4. Update Assistant UI
         # --------------------------------------------------
-
         self.assistantStep(
             0,
             6,
@@ -1030,8 +1037,8 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
 
             <b>Bodies</b><br>
             • Total Bodies : {len(bodies)}<br>
-            • Grounded : {grounded}<br>
-            • Moving : {moving}<br><br>
+            • Grounded : {grounded_count}<br>
+            • Moving : {moving_count}<br><br>
 
             <b>Joints</b><br>
             • Revolute : {revolute}<br>
@@ -1043,6 +1050,24 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
         )
 
         self.highlightAxisButton.setText("Confirm Assembly")
+        self.RecheckButton.setText("Recheck assembly")
+
+    def RecheckAssembly(self):
+        # If the assembly analysis is not correct
+        # Re-analyse the assembly and reset the assistant
+        
+        if self.RecheckButton.text() == "Recheck assembly":
+            
+            self.analyseAssembly()
+            return
+        
+        # Re-analyse the assembly and rehighlight the driving axis
+        
+        if self.RecheckButton.text() == "Recheck axis":
+                    
+            self.highlightDrivingAxis()
+            return
+
 
     def onAssistantButton(self):
 
@@ -1078,7 +1103,6 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
         QtWidgets.QApplication.processEvents()
 
     def highlightDrivingAxis(self):
-
         import pivy.coin as coin
 
         App.Console.PrintMessage("\n=== Highlight Driving Axis ===\n")
@@ -1086,7 +1110,6 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
         # ------------------------------------------
         # Remove previous highlight
         # ------------------------------------------
-
         try:
             if hasattr(self, "axisGraphic"):
                 self.view.getSceneGraph().removeChild(self.axisGraphic)
@@ -1096,90 +1119,381 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
         root = self.view.getSceneGraph()
 
         # ------------------------------------------
-        # Find first revolute joint
+        # Define joint handlers
         # ------------------------------------------
+        
+        joint_handlers = {
+            "Revolute": self._extract_revolute_axis,
+            "Slider": self._extract_slider_axis,
+            "Cylindrical": self._extract_cylindrical_axis,
+            "Fixed": self._extract_fixed_axis,
+        }
+
+        # ------------------------------------------
+        # Find the first joint
+        # ------------------------------------------
+        
+        found_joint = None
+        found_type = None
+        axis = None
+        origin = None
 
         for obj in self.doc.Objects:
-
-            if not hasattr(obj, "JointType"):
+            # Try to get joint type - FIXED: handle None
+            joint_type = None
+            for prop in ["JointType", "Type", "JointTypeId"]:
+                if hasattr(obj, prop):
+                    val = getattr(obj, prop)
+                    if val is not None:
+                        joint_type = str(val)
+                    break
+            
+            # If still None, try checking name and references
+            if not joint_type:
+                if "Joint" in obj.Name or "Joint" in obj.Label:
+                    if hasattr(obj, "Reference1") or hasattr(obj, "Reference2"):
+                        # Try to determine type from other properties
+                        if hasattr(obj, "JointType"):
+                            joint_type = str(obj.JointType)
+                        else:
+                            joint_type = "Unknown"
+                else:
+                    continue
+            
+            # Skip if still None
+            if joint_type is None:
+                continue
+            
+            # Debug: Print what we found
+            App.Console.PrintMessage(f"Checking object: {obj.Name} - Type: {joint_type}\n")
+            
+            # Find matching handler - FIXED: handle None safely
+            handler = None
+            matched_type = None
+            for known_type in joint_handlers:
+                # Safely check if joint_type contains known_type or vice versa
+                if joint_type is not None and known_type is not None:
+                    if known_type.lower() in joint_type.lower() or joint_type.lower() in known_type.lower():
+                        handler = joint_handlers[known_type]
+                        matched_type = known_type
+                        break
+            
+            if handler is None:
+                App.Console.PrintMessage(f"Skipping unknown joint: {obj.Name} (Type: {joint_type})\n")
+                continue
+            
+            # Extract axis and origin using the handler
+            try:
+                axis, origin = handler(obj)
+                if axis is not None and origin is not None:
+                    found_joint = obj
+                    found_type = matched_type
+                    break
+            except Exception as e:
+                App.Console.PrintError(f"Error extracting from {obj.Name}: {e}\n")
                 continue
 
-            if obj.JointType != "Revolute":
-                continue
-
-            App.Console.PrintMessage(f"Found: {obj.Name}\n")
-
-            # ------------------------------------------
-            # Get the cylindrical face used by the joint
-            # ------------------------------------------
-
-            body = obj.Reference2[0]
-
-            faceName = obj.Reference2[1][0]
-
-            face = body.Shape.getElement(faceName)
-
-            # TRUE centre of the revolute joint
-            origin = face.CenterOfMass
-
-            # Joint axis
-            axis = obj.Placement2.Rotation.multVec(App.Vector(0, 0, 1))
-            axis.normalize()
-
-            App.Console.PrintMessage(f"Origin = {origin}\n")
-            App.Console.PrintMessage(f"Axis = {axis}\n")
-
-            # ------------------------------------------
-            # Create line
-            # ------------------------------------------
-
-            length = 300
-
-            p1 = origin - axis * (length / 2)
-            p2 = origin + axis * (length / 2)
-
-            sep = coin.SoSeparator()
-
-            material = coin.SoMaterial()
-            material.diffuseColor = (0.0, 0.45, 1.0)
-
-            drawStyle = coin.SoDrawStyle()
-            drawStyle.lineWidth = 5
-
-            coords = coin.SoCoordinate3()
-
-            coords.point.setValues(
-                0,
-                2,
-                [
-                    (p1.x, p1.y, p1.z),
-                    (p2.x, p2.y, p2.z),
-                ],
-            )
-
-            line = coin.SoLineSet()
-
-            sep.addChild(material)
-            sep.addChild(drawStyle)
-            sep.addChild(coords)
-            sep.addChild(line)
-
-            root.addChild(sep)
-
-            self.axisGraphic = sep
-
+        # ------------------------------------------
+        # If no joint found, show error
+        # ------------------------------------------
+        
+        if found_joint is None:
             self.assistantStep(
-                2,
+                1,
                 6,
-                "Driving Axis Detected",
-                "I have highlighted the detected driving axis.<br><br>"
-                "Please verify that the blue axis is correct."
+                "⚠️ No Driving Joint Found",
+                """
+                <b>⚠️ No detectable joint found.</b><br><br>
+                
+                I could not find a revolute, slider, or cylindrical joint.<br><br>
+                
+                Please ensure:<br>
+                • You have created at least one joint<br>
+                • The joint type is supported<br><br>
+                
+                <b>Supported types:</b> Revolute, Slider, Cylindrical<br><br>
+                
+                Click <b>"Recheck"</b> to scan again.
+                """
             )
+            self.RecheckButton.setText("Recheck axis")
+            self.RecheckButton.clicked.disconnect()
+            self.RecheckButton.clicked.connect(self.recheckJoints)
+            self.RecheckButton.show()
+            return
 
-            self.highlightAxisButton.setText("Confirm Axis")
+        # ------------------------------------------
+        # Normalize axis
+        # ------------------------------------------
+        
+        if axis.Length > 0:
+            axis.normalize()
+        else:
+            axis = App.Vector(0, 0, 1)
 
-            break
+        App.Console.PrintMessage(f"FOUND JOINT: {found_joint.Name}\n")
+        App.Console.PrintMessage(f"Type: {found_type}\n")
+        App.Console.PrintMessage(f"Origin: {origin}\n")
+        App.Console.PrintMessage(f"Axis: {axis}\n")
 
+        # ------------------------------------------
+        # Create the axis line in 3D view
+        # ------------------------------------------
+        
+        length = 300
+        p1 = origin - axis * (length / 2)
+        p2 = origin + axis * (length / 2)
+
+        sep = coin.SoSeparator()
+
+        # Color based on joint type
+        colors = {
+            "Revolute": (0.0, 0.45, 1.0),    # Blue
+            "Slider": (0.0, 1.0, 0.45),      # Green
+            "Cylindrical": (1.0, 0.45, 0.0), # Orange
+            "Fixed": (1.0, 0.0, 0.0),        # Red
+        }
+        color = colors.get(found_type, (0.0, 0.45, 1.0))
+
+        material = coin.SoMaterial()
+        material.diffuseColor = color
+        material.emissiveColor = color
+
+        drawStyle = coin.SoDrawStyle()
+        drawStyle.lineWidth = 5
+
+        coords = coin.SoCoordinate3()
+        coords.point.setValues(
+            0,
+            2,
+            [
+                (p1.x, p1.y, p1.z),
+                (p2.x, p2.y, p2.z),
+            ],
+        )
+
+        line = coin.SoLineSet()
+        sep.addChild(material)
+        sep.addChild(drawStyle)
+        sep.addChild(coords)
+        sep.addChild(line)
+
+        root.addChild(sep)
+        self.axisGraphic = sep
+
+        # ------------------------------------------
+        # Store joint info for later use
+        # ------------------------------------------
+        
+        self.currentJoint = found_joint
+        self.currentJointType = found_type
+        self.currentAxis = axis
+        self.currentOrigin = origin
+
+        # ------------------------------------------
+        # Update Assistant
+        # ------------------------------------------
+        
+        joint_type_display = {
+            "Revolute": "Revolute Joint (Rotation Axis)",
+            "Slider": "Slider Joint (Translation Direction)",
+            "Cylindrical": "Cylindrical Joint (Combined Axis)",
+            "Fixed": "Fixed Joint (No Motion)",
+        }.get(found_type, "Driving Axis")
+
+        self.assistantStep(
+            1,
+            6,
+            f"{joint_type_display} Detected",
+            f"""
+            I have highlighted the detected axis.<br><br>
+            
+            <b>Joint Name:</b> {found_joint.Label}<br>
+            <b>Joint Type:</b> {found_type}<br><br>
+            
+            <b>Axis Direction:</b><br>
+            [{axis.x:.6f}, {axis.y:.6f}, {axis.z:.6f}]<br><br>
+            
+            <b>Origin Position:</b><br>
+            [{origin.x:.6f}, {origin.y:.6f}, {origin.z:.6f}] mm<br><br>
+            
+            <b>Connected Bodies:</b><br>
+            • {self._get_joint_body(found_joint, 1)}<br>
+            • {self._get_joint_body(found_joint, 2)}<br><br>
+            
+            <b>Is this axis correct?</b>
+            """
+        )
+
+        self.highlightAxisButton.setText("Confirm Axis")
+        self.RecheckButton.setText("Recheck axis")
+    # ============================================================
+    # JOINT EXTRACTION HELPERS
+    # ============================================================
+
+    def _extract_revolute_axis(self, obj):
+        """Extract axis and origin from a Revolute joint"""
+        
+        # Try to get from Reference2 (common for revolute)
+        try:
+            if hasattr(obj, "Reference2"):
+                ref = obj.Reference2
+                if isinstance(ref, (list, tuple)) and len(ref) > 0:
+                    body = ref[0]
+                    if isinstance(body, (list, tuple)):
+                        body = body[0]
+                    
+                    # Try to get face from reference
+                    if len(ref) > 1 and isinstance(ref[1], (list, tuple)):
+                        face_name = ref[1][0]
+                        if hasattr(body, "Shape"):
+                            face = body.Shape.getElement(face_name)
+                            origin = face.CenterOfMass
+                            # Axis is along the face normal (cylindrical face)
+                            # For revolute, we need the axis of the cylindrical face
+                            if hasattr(face, "Surface") and hasattr(face.Surface, "Axis"):
+                                axis = face.Surface.Axis
+                            else:
+                                # Fallback: use placement Z-axis
+                                if hasattr(obj, "Placement"):
+                                    axis = obj.Placement.Rotation.multVec(App.Vector(0, 0, 1))
+                                else:
+                                    axis = App.Vector(0, 0, 1)
+                            return axis, origin
+        except Exception as e:
+            App.Console.PrintMessage(f"Revolute extraction (Reference2): {e}\n")
+        
+        # Fallback: use placement
+        if hasattr(obj, "Placement"):
+            origin = obj.Placement.Base
+            axis = obj.Placement.Rotation.multVec(App.Vector(0, 0, 1))
+            return axis, origin
+        elif hasattr(obj, "Placement2"):
+            origin = obj.Placement2.Base
+            axis = obj.Placement2.Rotation.multVec(App.Vector(0, 0, 1))
+            return axis, origin
+        
+        return App.Vector(0, 0, 1), App.Vector(0, 0, 0)
+
+    def _extract_slider_axis(self, obj):
+        """Extract axis and origin from a Slider joint"""
+        
+        # Slider joints: axis is the translation direction
+        try:
+            if hasattr(obj, "Placement"):
+                origin = obj.Placement.Base
+                axis = obj.Placement.Rotation.multVec(App.Vector(0, 0, 1))
+                return axis, origin
+            elif hasattr(obj, "Placement1"):
+                origin = obj.Placement1.Base
+                axis = obj.Placement1.Rotation.multVec(App.Vector(0, 0, 1))
+                return axis, origin
+        except:
+            pass
+        
+        # Try to get from reference
+        try:
+            if hasattr(obj, "Reference1"):
+                ref = obj.Reference1
+                if isinstance(ref, (list, tuple)) and len(ref) > 0:
+                    body = ref[0]
+                    if isinstance(body, (list, tuple)):
+                        body = body[0]
+                    if hasattr(body, "Shape"):
+                        origin = body.Shape.CenterOfMass
+                        # Axis from placement
+                        if hasattr(body, "Placement"):
+                            axis = body.Placement.Rotation.multVec(App.Vector(0, 0, 1))
+                        else:
+                            axis = App.Vector(0, 0, 1)
+                        return axis, origin
+        except:
+            pass
+        
+        return App.Vector(0, 0, 1), App.Vector(0, 0, 0)
+
+    def _extract_cylindrical_axis(self, obj):
+        """Extract axis and origin from a Cylindrical joint"""
+        
+        # Cylindrical joints have both rotation and translation along the same axis
+        # Use similar logic to revolute
+        try:
+            if hasattr(obj, "Placement"):
+                origin = obj.Placement.Base
+                axis = obj.Placement.Rotation.multVec(App.Vector(0, 0, 1))
+                return axis, origin
+            elif hasattr(obj, "Placement2"):
+                origin = obj.Placement2.Base
+                axis = obj.Placement2.Rotation.multVec(App.Vector(0, 0, 1))
+                return axis, origin
+        except:
+            pass
+        
+        # Try to get from reference
+        try:
+            if hasattr(obj, "Reference1"):
+                ref = obj.Reference1
+                if isinstance(ref, (list, tuple)) and len(ref) > 0:
+                    body = ref[0]
+                    if isinstance(body, (list, tuple)):
+                        body = body[0]
+                    if hasattr(body, "Shape"):
+                        origin = body.Shape.CenterOfMass
+                        if hasattr(body, "Placement"):
+                            axis = body.Placement.Rotation.multVec(App.Vector(0, 0, 1))
+                        else:
+                            axis = App.Vector(0, 0, 1)
+                        return axis, origin
+        except:
+            pass
+        
+        return App.Vector(0, 0, 1), App.Vector(0, 0, 0)
+
+    def _extract_fixed_axis(self, obj):
+        """Extract axis and origin from a Fixed joint"""
+        
+        # Fixed joints don't have an axis, but we can show the connection point
+        # Use the placement or reference position
+        
+        try:
+            if hasattr(obj, "Placement"):
+                origin = obj.Placement.Base
+                axis = App.Vector(0, 0, 1)  # No specific direction for fixed
+                return axis, origin
+        except:
+            pass
+        
+        try:
+            if hasattr(obj, "Reference1"):
+                ref = obj.Reference1
+                if isinstance(ref, (list, tuple)) and len(ref) > 0:
+                    body = ref[0]
+                    if isinstance(body, (list, tuple)):
+                        body = body[0]
+                    if hasattr(body, "Shape"):
+                        origin = body.Shape.CenterOfMass
+                        return App.Vector(0, 0, 1), origin
+        except:
+            pass
+        
+        return App.Vector(0, 0, 1), App.Vector(0, 0, 0)
+
+    def _get_joint_body(self, obj, index):
+        """Get the name of a body connected to a joint"""
+        try:
+            ref_prop = f"Reference{index}"
+            if hasattr(obj, ref_prop):
+                ref = getattr(obj, ref_prop)
+                if isinstance(ref, (list, tuple)) and len(ref) > 0:
+                    body = ref[0]
+                    if isinstance(body, (list, tuple)):
+                        body = body[0]
+                    if hasattr(body, "Label"):
+                        return body.Label
+                    return str(body)
+        except:
+            pass
+        return f"Body {index}"
 
     def highlightCentreOfMass(self, point):
 
@@ -1664,7 +1978,7 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
 
         self.assistantButtonYes.hide()
         self.assistantButtonNo.hide()
-
+      
         self.assistantStatus.setText(
             "<b>Step 4 of 6</b><br><br>"
             "<b>Mass Properties Confirmed ✓</b><br><br>"
@@ -1672,7 +1986,343 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
             "have been accepted."
         )
 
+    def showJointProperties(self):
+        """Step 5: Display and confirm joint propertieS"""
+        
+        App.Console.PrintMessage("\n=== Joint Properties ===\n")
+        
+        # --------------------------------------------------
+        # Find all joints in the assembly
+        # --------------------------------------------------
+        
+        joints = []
+        for obj in self.doc.Objects:
+            # Try different property names for joint type
+            joint_type = None
+            for prop_name in ["JointType", "Type", "JointTypeId"]:
+                if hasattr(obj, prop_name):
+                    joint_type = getattr(obj, prop_name)
+                    break
+            
+            # Also check if object name contains joint keywords
+            if not joint_type:
+                if "Joint" in obj.Name or "Joint" in obj.Label:
+                    # Check if it has references (likely a joint)
+                    if hasattr(obj, "Reference1") or hasattr(obj, "Reference2"):
+                        joint_type = "Unknown"
+            
+            # Check if this is a joint
+            is_joint = False
+            if joint_type is not None:
+                is_joint = True
+            elif hasattr(obj, "Reference1") and hasattr(obj, "Reference2"):
+                is_joint = True
+            
+            if is_joint:
+                joints.append(obj)
+                App.Console.PrintMessage(f"Found joint: {obj.Name} ({obj.Label})")
+        
+        # --------------------------------------------------
+        # Store joints for later use
+        # --------------------------------------------------
+        
+        self.detectedJoints = joints
+        
+        # --------------------------------------------------
+        # Check if we found any joints
+        # --------------------------------------------------
+        
+        if len(joints) == 0:
+            self.assistantStep(
+                5,
+                6,
+                "⚠️ No Joint Detected",
+                """
+                <b>⚠️ No Joints Found</b><br><br>
+                
+                I could not detect any joints in your assembly.<br><br>
+                
+                Please ensure:<br>
+                • You have created at least one joint<br>
+                • The joint is connected to the moving body<br>
+                • The joint is properly defined<br><br>
+                
+                <b>Options:</b><br>
+                • Click <b>"Recheck"</b> to scan again<br>
+                • Click <b>"Skip"</b> to proceed with manual input
+                """
+            )
+            
+            # Add skip button if not already present
+            if not hasattr(self, 'skipButton'):
+                self.skipButton = QtWidgets.QPushButton("⏭ Skip (Manual Input)")
+                self.skipButton.clicked.connect(self.skipJointStep)
+                self.assistantLayout.addWidget(self.skipButton)
+            
+            self.skipButton.show()
+            
+            # Also show recheck
+            self.RecheckButton.setText("Recheck joints")
+            self.RecheckButton.clicked.disconnect()
+            self.RecheckButton.clicked.connect(self.recheckJoints)
+            self.RecheckButton.show()
+            
+            return
+        
+        # --------------------------------------------------
+        # Get properties of the first joint
+        # --------------------------------------------------
+        
+        joint = joints[0]
+        
+        # Extract joint type
+        joint_type = "Unknown"
+        for prop_name in ["JointType", "Type", "JointTypeId"]:
+            if hasattr(joint, prop_name):
+                joint_type = str(getattr(joint, prop_name))
+                break
+        
+        # Extract axis direction
+        axis = App.Vector(0, 0, 1)  # Default Z-axis
+        position = App.Vector(0, 0, 0)
+        
+        if hasattr(joint, "Placement"):
+            position = joint.Placement.Base
+            axis = joint.Placement.Rotation.multVec(App.Vector(0, 0, 1))
+        elif hasattr(joint, "Placement2"):
+            position = joint.Placement2.Base
+            axis = joint.Placement2.Rotation.multVec(App.Vector(0, 0, 1))
+        
+        # Extract connected bodies
+        body1 = "Unknown"
+        body2 = "Unknown"
+        
+        if hasattr(joint, "Reference1"):
+            ref1 = joint.Reference1
+            if isinstance(ref1, (list, tuple)) and len(ref1) > 0:
+                if isinstance(ref1[0], (list, tuple)):
+                    body1 = ref1[0][0].Label if hasattr(ref1[0][0], "Label") else str(ref1[0][0])
+                else:
+                    body1 = ref1[0].Label if hasattr(ref1[0], "Label") else str(ref1[0])
+        
+        if hasattr(joint, "Reference2"):
+            ref2 = joint.Reference2
+            if isinstance(ref2, (list, tuple)) and len(ref2) > 0:
+                if isinstance(ref2[0], (list, tuple)):
+                    body2 = ref2[0][0].Label if hasattr(ref2[0][0], "Label") else str(ref2[0][0])
+                else:
+                    body2 = ref2[0].Label if hasattr(ref2[0], "Label") else str(ref2[0])
+        
+        # Determine which body is the moving body
+        moving_body_name = self.movingBody.Label if self.movingBody else "Unknown"
+        
+        # Display in Assistant
+        self.assistantStep(
+            5,
+            6,
+            "Joint Properties",
+            f"""
+            I have detected the driving joint.<br><br>
+            
+            <b>Joint Name:</b> {joint.Label}<br>
+            <b>Joint Type:</b> {joint_type}<br><br>
+            
+            <b>Axis of Rotation:</b><br>
+            • Direction: [{axis.x:.6f}, {axis.y:.6f}, {axis.z:.6f}]<br>
+            • Position: [{position.x:.6f}, {position.y:.6f}, {position.z:.6f}] mm<br><br>
+            
+            <b>Connected Bodies:</b><br>
+            • Body 1: {body1}<br>
+            • Body 2: {body2}<br><br>
+            
+            <b>Moving Body:</b><br>
+            • {moving_body_name}<br><br>
+            
+            <b>Is this information correct?</b>
+            """
+        )
+        
+        # --------------------------------------------------
+        # Store joint parameters for later use
+        # --------------------------------------------------
+        
+        self.jointParams = {
+            'joint': joint,
+            'joint_type': joint_type,
+            'axis': axis,
+            'position': position,
+            'body1': body1,
+            'body2': body2,
+            'moving_body': moving_body_name
+        }
+        
+        # --------------------------------------------------
+        # Show buttons
+        # --------------------------------------------------
+        
+        self.assistantButtonYes.show()
+        self.assistantButtonNo.show()
+        
+        # Remove previous connections
+        try:
+            self.assistantButtonYes.clicked.disconnect()
+        except Exception:
+            pass
+        
+        try:
+            self.assistantButtonNo.clicked.disconnect()
+        except Exception:
+            pass
+        
+        # Connect buttons
+        self.assistantButtonYes.clicked.connect(self.confirmJointProperties)
+        self.assistantButtonNo.clicked.connect(self.recalculateJointProperties)
+        
+        # Hide skip button if visible
+        if hasattr(self, 'skipButton'):
+            self.skipButton.hide()
+    def recheckJoints(self):
+        """Recheck joints when none were found"""
+        
+        App.Console.PrintMessage("Rechecking joints...\n")
+        
+        self.assistantStatus.setText(
+            "<b>Step 5 of 6</b><br><br>"
+            "⏳ Rechecking for joints..."
+        )
+        
+        QtWidgets.QApplication.processEvents()
+        
+        # Call showJointProperties again
+        self.showJointProperties()
 
+    def skipJointStep(self):
+        """Skip joint detection and proceed with manual input"""
+        
+        App.Console.PrintMessage("Skipping joint detection...\n")
+        
+        if hasattr(self, 'skipButton'):
+            self.skipButton.hide()
+        
+        # Ask user for manual joint input
+        dialog = JointManualInputDialog(self.assembly)
+        if dialog.exec_():
+            # Store manual joint parameters
+            self.jointParams = {
+                'joint': None,
+                'joint_type': 'Manual Input',
+                'axis': dialog.axis,
+                'position': dialog.position,
+                'body1': dialog.body1,
+                'body2': dialog.body2,
+                'moving_body': dialog.moving_body
+            }
+            
+            self.confirmJointProperties()
+
+    def confirmJointProperties(self):
+        """Step 5 confirmed – proceed to Step 6"""
+        
+        App.Console.PrintMessage("Joint properties confirmed.\n")
+        
+        self.assistantButtonYes.hide()
+        self.assistantButtonNo.hide()
+        
+        # Hide any skip button
+        if hasattr(self, 'skipButton'):
+            self.skipButton.hide()
+        
+        # Move to Step 6
+        self.finalizeAssistant()
+
+    def recalculateJointProperties(self):
+        """Recalculate joint properties"""
+        
+        App.Console.PrintMessage("Recalculating joint properties...\n")
+        
+        self.assistantButtonYes.hide()
+        self.assistantButtonNo.hide()
+        
+        self.assistantStatus.setText(
+            "<b>Step 5 of 6</b><br><br>"
+            "⏳ Recalculating joint properties..."
+        )
+        
+        QtWidgets.QApplication.processEvents()
+        
+        # Re-run joint detection
+        self.showJointProperties()
+
+    def finalizeAssistant(self):
+        """Step 6: Finalize and prepare for simulation"""
+        
+        App.Console.PrintMessage("\n=== Finalizing Assistant ===\n")
+        
+        # --------------------------------------------------
+        # Generate DAP3D input file content
+        # --------------------------------------------------
+        
+        inBodies_content = self.generateInBodies()
+        inJoints_content = self.generateInJoints()
+        inPoints_content = self.generateInPoints()
+        inVectors_content = self.generateInVectors()
+        inForces_content = self.generateInForces()
+        
+        # --------------------------------------------------
+        # Display summary to user
+        # --------------------------------------------------
+        
+        mass_str = f"{self.bodyMass:.6e}" if hasattr(self, 'bodyMass') and self.bodyMass else "Unknown"
+        
+        self.assistantStep(
+            6,
+            6,
+            "✅ Simulation Ready!",
+            f"""
+            <b>✅ Assembly setup complete!</b><br><br>
+            
+            All parameters have been confirmed:<br>
+            • ✅ Body detected<br>
+            • ✅ Center of Mass confirmed<br>
+            • ✅ Mass and Inertia confirmed<br>
+            • ✅ Joint axis confirmed<br><br>
+            
+            <b>Summary:</b><br>
+            • Moving Body: {self.movingBody.Label if self.movingBody else 'Unknown'}<br>
+            • Mass: {mass_str} kg<br>
+            • Joint Type: {self.jointParams.get('joint_type', 'Unknown')}<br><br>
+            
+            <b>DAP3D Input Files Generated:</b><br>
+            • ✓ inBodies.m<br>
+            • ✓ inJoints.m<br>
+            • ✓ inPoints.m<br>
+            • ✓ inVectors.m<br>
+            • ✓ inForces.m<br><br>
+            
+            Press <b>"Run Kinematics"</b> to run the simulation.
+            """
+        )
+        
+        # --------------------------------------------------
+        # Store generated content for later use
+        # --------------------------------------------------
+        
+        self.dap3dInputs = {
+            'inBodies': inBodies_content,
+            'inJoints': inJoints_content,
+            'inPoints': inPoints_content,
+            'inVectors': inVectors_content,
+            'inForces': inForces_content
+        }
+        
+        # --------------------------------------------------
+        # Enable Run button
+        # --------------------------------------------------
+        
+        self.form.RunKinematicsButton.setEnabled(True)
+        self.form.RunKinematicsButton.setToolTip("Run kinematics simulation")
+
+   
     def recalculateMassProperties(self):
 
         App.Console.PrintMessage(
