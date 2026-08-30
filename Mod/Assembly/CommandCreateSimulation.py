@@ -851,6 +851,8 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
         self.highlightAxisButton = QtWidgets.QPushButton("Highlight Axis")
         self.RecheckButton = QtWidgets.QPushButton("Recheck assembly")
 
+        self.infoButton = QtWidgets.QPushButton("ℹ️ Detailed Assembly Info")
+
         self.axisYesButton = QtWidgets.QPushButton("✓ Yes")
 
         self.axisChooseButton = QtWidgets.QPushButton("Choose Another")
@@ -860,11 +862,16 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
         )
 
         self.RecheckButton.clicked.connect(
-                    self.RecheckAssembly
-                )
+            self.RecheckAssembly
+        )
+
+        self.infoButton.clicked.connect(
+            self.show_assembly_info
+        )
 
         self.assistantLayout.addWidget(self.highlightAxisButton)
         self.assistantLayout.addWidget(self.RecheckButton)
+        self.assistantLayout.addWidget(self.infoButton)
 
         assistantGroup.setLayout(self.assistantLayout)
 
@@ -1078,6 +1085,7 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
         if self.highlightAxisButton.text() == "Confirm Assembly":
 
             self.highlightDrivingAxis()
+            self.infoButton.hide()
             return
 
         # ------------------------------------------
@@ -1448,6 +1456,68 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
             pass
         
         return App.Vector(0, 0, 1), App.Vector(0, 0, 0)
+
+    def show_assembly_info(self):
+        """Reads grounded parts and joint connections directly from object properties."""
+        doc = App.ActiveDocument
+        if not doc:
+            QtWidgets.QMessageBox.information(
+                None, "Info", "No active document open."
+            )
+            return
+
+        def get_tree_label(prop_value):
+            """Unwraps FreeCAD property links to get the exact Tree View Label."""
+            if not prop_value:
+                return None
+            while isinstance(prop_value, (list, tuple)) and len(prop_value) > 0:
+                prop_value = prop_value[0]
+            return getattr(prop_value, "Label", None)
+
+        grounded = []
+        joints = []
+
+        for obj in doc.Objects:
+            # 1. Grounded Joints (reads 'ObjectToGround' directly from the Tree property)
+            if hasattr(obj, "ObjectToGround") or hasattr(obj, "DataObjectToGround"):
+                ref = getattr(
+                    obj, "ObjectToGround", getattr(obj, "DataObjectToGround", None)
+                )
+                label = get_tree_label(ref)
+                if label and label not in grounded:
+                    grounded.append(label)
+
+            # 2. Kinematic Joints (reads 'Reference1' and 'Reference2')
+            elif (
+                hasattr(obj, "Reference1") or hasattr(obj, "DataReference1")
+            ) and (hasattr(obj, "Reference2") or hasattr(obj, "DataReference2")):
+                ref1 = getattr(
+                    obj, "Reference1", getattr(obj, "DataReference1", None)
+                )
+                ref2 = getattr(
+                    obj, "Reference2", getattr(obj, "DataReference2", None)
+                )
+                b1 = get_tree_label(ref1)
+                b2 = get_tree_label(ref2)
+                if b1 and b2:
+                    joints.append(f"• {obj.Label}: {b1} ↔ {b2}")
+
+        report = ["=== Grounded Parts ==="]
+        report.append(", ".join(grounded) if grounded else "None")
+        report.append("\n=== Joint Connections ===")
+        report.extend(joints if joints else ["No joints detected."])
+
+        # Create the message box instance
+        msg = QtWidgets.QMessageBox()
+        msg.setWindowTitle("Assembly Info")
+        msg.setText("\n".join(report))
+
+        # Fetch the default info icon pixmap and resize it (e.g., 24x24 pixels)
+        default_icon = msg.style().standardIcon(QtWidgets.QStyle.SP_MessageBoxInformation)
+        small_pixmap = default_icon.pixmap(24, 24)
+
+        msg.setIconPixmap(small_pixmap)
+        msg.exec_()
 
     def _extract_fixed_axis(self, obj):
         """Extract axis and origin from a Fixed joint"""
