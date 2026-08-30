@@ -2512,42 +2512,6 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
 
         self.form.frameSlider.setValue(val)
 
-    def stopAnimation(self):
-        self.animationTimer.stop()
-
-    def addMotionClicked(self):
-        dialog = MotionEditDialog(self.assembly)
-        if dialog.exec_():
-            self.createMotionObject(dialog.motionType, dialog.joint, dialog.formula)
-
-    # Taskbox keyboard event handler
-    def eventFilter(self, watched, event):
-        if self.form is not None and watched == self.form.motionList:
-            if event.type() == QtCore.QEvent.ShortcutOverride:
-                if event.key() == QtCore.Qt.Key_Delete:
-                    event.accept()
-                    return True  # Indicate that the event has been handled
-                return False
-
-            elif event.type() == QtCore.QEvent.KeyPress:
-                if event.key() == QtCore.Qt.Key_Delete:
-                    self.deleteSelectedMotions()
-                    return True  # Consume the event
-
-        return super().eventFilter(watched, event)
-
-    def deleteSelectedMotions(self):
-        selected_indexes = self.form.motionList.selectedIndexes()
-        sorted_indexes = sorted(selected_indexes, key=lambda x: x.row(), reverse=True)
-        for index in sorted_indexes:
-            row = index.row()
-            if row < len(self.simFeaturePy.Group):
-                motion = self.simFeaturePy.Group[row]
-                # First remove the link from the viewObj
-                self.simFeaturePy.Group.remove(motion)
-                # Delete the object
-                motion.Document.removeObject(motion.Name)
-
 
 if App.GuiUp:
     Gui.addCommand("Assembly_CreateSimulation", CommandCreateSimulation())
