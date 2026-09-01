@@ -788,9 +788,8 @@ SLOPE defines the steepness of the transition between 0 and H1 and H2 to 0 about
 ######### Create Simulation Task ###########
 class TaskAssemblyCreateSimulation(QtCore.QObject):
     def __init__(self, simFeaturePy=None):
+        self.currentStep = 0
         super().__init__()
-        Gui.Selection.clearSelection()
-
         self.assembly = UtilsAssembly.activeAssembly()
 
         self.initialPlcs = UtilsAssembly.saveAssemblyPartsPlacements(self.assembly)
@@ -863,8 +862,13 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
                     self.RecheckAssembly
                 )
 
+        self.backButton = QtWidgets.QPushButton("⬅ Back")
+        self.backButton.clicked.connect(self.goBackStep)
+        self.backButton.setEnabled(False)  # Disabled at Step 0
+
         self.assistantLayout.addWidget(self.highlightAxisButton)
         self.assistantLayout.addWidget(self.RecheckButton)
+        self.assistantLayout.addWidget(self.backButton)
 
         assistantGroup.setLayout(self.assistantLayout)
 
@@ -918,6 +922,7 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
         self.index = 0
 
     def analyseAssembly(self):
+        self.currentStep = 0
 
         bodies = []
         revolute = 0
@@ -1051,6 +1056,7 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
 
         self.highlightAxisButton.setText("Confirm Assembly")
         self.RecheckButton.setText("Recheck assembly")
+        self.updateBackButtonState()
 
     def RecheckAssembly(self):
         # If the assembly analysis is not correct
@@ -1103,8 +1109,9 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
         QtWidgets.QApplication.processEvents()
 
     def highlightDrivingAxis(self):
+        self.currentStep = 1
         import pivy.coin as coin
-
+        
         App.Console.PrintMessage("\n=== Highlight Driving Axis ===\n")
 
         # ------------------------------------------
@@ -1327,6 +1334,7 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
 
         self.highlightAxisButton.setText("Confirm Axis")
         self.RecheckButton.setText("Recheck axis")
+        self.updateBackButtonState()
     # ============================================================
     # JOINT EXTRACTION HELPERS
     # ============================================================
@@ -1583,6 +1591,7 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
         self.comGraphic = annotation
 
     def showInitialBodyState(self):
+        self.currentStep = 2
 
         App.Console.PrintMessage("\n=== Initial Body State ===\n")
 
@@ -1756,6 +1765,7 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
 
 
     def showMassProperties(self):
+        self.currentStep = 3
 
         App.Console.PrintMessage(
             "\n=== Mass Properties ===\n"
@@ -1971,6 +1981,7 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
         )
 
     def confirmMassProperties(self):
+        self.currentStep = 4
 
         App.Console.PrintMessage(
             "Mass properties confirmed.\n"
@@ -1988,6 +1999,7 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
 
     def showJointProperties(self):
         """Step 5: Display and confirm joint propertieS"""
+        self.currentStep = 5	
         
         App.Console.PrintMessage("\n=== Joint Properties ===\n")
         
@@ -2484,6 +2496,7 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
         self.index = ((self.direction * count + offset) % range_) + self.startFrm
         self.setFrameValue(self.index)
 
+
     def displayLastFrame(self):
         nFrms = self.assembly.numberOfFrames()
         self.setFrameValue(nFrms - 1)
@@ -2514,6 +2527,44 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
 
     def stopAnimation(self):
         self.animationTimer.stop()
+
+    def goBackStep(self):
+        """Go back to the previous step"""
+        
+        if not hasattr(self, 'currentStep') or self.currentStep <= 0:
+            App.Console.PrintMessage("Already at first step.\n")
+            return
+        
+        self.currentStep -= 1
+        
+        App.Console.PrintMessage(f"Going back to Step {self.currentStep}\n")
+        
+        # Re-display the previous step
+        if self.currentStep == 0:
+            self.analyseAssembly()
+        elif self.currentStep == 1:
+            self.highlightDrivingAxis()
+        elif self.currentStep == 2:
+            self.showInitialBodyState()
+        elif self.currentStep == 3:
+            self.showMassProperties()
+        elif self.currentStep == 4:
+            self.assistantStatus.setText(
+                "<b>Step 4 of 6</b><br><br>"
+                "<b>Mass Properties Confirmed ✓</b><br><br>"
+                "The body's mass and inertia properties "
+                "have been accepted."
+            )
+        elif self.currentStep == 5:
+            self.showJointProperties()
+        
+        self.updateBackButtonState()
+
+    def updateBackButtonState(self):
+        """Enable or disable the back button based on current step"""
+        if not hasattr(self, 'currentStep'):
+            self.currentStep = 0
+        self.backButton.setEnabled(self.currentStep > 0)
 
     def addMotionClicked(self):
         dialog = MotionEditDialog(self.assembly)
