@@ -1036,7 +1036,7 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
         # 4. Update Assistant UI
         # --------------------------------------------------
         self.assistantStep(
-            0,
+            1,
             6,
             "Assembly Analysis",
             f"""
@@ -1310,7 +1310,7 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
         }.get(found_type, "Driving Axis")
 
         self.assistantStep(
-            1,
+            2,
             6,
             f"{joint_type_display} Detected",
             f"""
