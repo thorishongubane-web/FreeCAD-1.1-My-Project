@@ -850,6 +850,8 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
         self.highlightAxisButton = QtWidgets.QPushButton("Highlight Axis")
         self.RecheckButton = QtWidgets.QPushButton("Recheck assembly")
 
+        self.infoButton = QtWidgets.QPushButton("ℹ️ Detailed Assembly Info")
+
         self.axisYesButton = QtWidgets.QPushButton("✓ Yes")
 
         self.axisChooseButton = QtWidgets.QPushButton("Choose Another")
@@ -859,8 +861,12 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
         )
 
         self.RecheckButton.clicked.connect(
-                    self.RecheckAssembly
-                )
+            self.RecheckAssembly
+        )
+
+        self.infoButton.clicked.connect(
+            self.show_assembly_info
+        )
 
         self.backButton = QtWidgets.QPushButton("⬅ Back")
         self.backButton.clicked.connect(self.goBackStep)
@@ -869,6 +875,7 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
         self.assistantLayout.addWidget(self.highlightAxisButton)
         self.assistantLayout.addWidget(self.RecheckButton)
         self.assistantLayout.addWidget(self.backButton)
+        self.assistantLayout.addWidget(self.infoButton)
 
         assistantGroup.setLayout(self.assistantLayout)
 
@@ -1084,6 +1091,7 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
         if self.highlightAxisButton.text() == "Confirm Assembly":
 
             self.highlightDrivingAxis()
+            self.infoButton.hide()
             return
 
         # ------------------------------------------
@@ -1456,6 +1464,88 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
             pass
         
         return App.Vector(0, 0, 1), App.Vector(0, 0, 0)
+
+    def show_assembly_info(self):
+        """Displays grounded parts and joint connections with exact JCS Z-axis rotation angles."""
+        doc = App.ActiveDocument
+        if not doc:
+            return
+
+        def get_target(ref):
+            """Unwraps nested reference tuples to return the FreeCAD object."""
+            while isinstance(ref, (list, tuple)) and ref:
+                ref = ref[0]
+            return ref if hasattr(ref, "Label") else None
+
+        grounded, joints = [], []
+
+        for obj in doc.Objects:
+            # 1. Check for Grounded Parts
+            if hasattr(obj, "ObjectToGround") or hasattr(obj, "DataObjectToGround"):
+                ref = getattr(
+                    obj, "ObjectToGround", getattr(obj, "DataObjectToGround", None)
+                )
+                target = get_target(ref)
+                if target and target.Label not in grounded:
+                    grounded.append(target.Label)
+
+            # 2. Kinematic Joints
+            elif hasattr(obj, "Reference1") or hasattr(obj, "DataReference1"):
+                b1 = get_target(
+                    getattr(
+                        obj, "Reference1", getattr(obj, "DataReference1", None)
+                    )
+                )
+                b2 = get_target(
+                    getattr(
+                        obj, "Reference2", getattr(obj, "DataReference2", None)
+                    )
+                )
+
+                if b1 and b2:
+                    # Local connector placements & offsets
+                    p1 = getattr(
+                        obj,
+                        "DataPlacement1",
+                        getattr(obj, "Placement1", App.Placement()),
+                    )
+                    p2 = getattr(
+                        obj,
+                        "DataPlacement2",
+                        getattr(obj, "Placement2", App.Placement()),
+                    )
+                    o1 = getattr(
+                        obj,
+                        "DataOffset1",
+                        getattr(obj, "Offset1", App.Placement()),
+                    )
+                    o2 = getattr(
+                        obj,
+                        "DataOffset2",
+                        getattr(obj, "Offset2", App.Placement()),
+                    )
+
+                    # World placements using FreeCAD's '*' operator
+                    jcs1 = b1.Placement * p1 * o1
+                    jcs2 = b2.Placement * p2 * o2
+
+                    # Extract Z-axis angle (Yaw) directly in degrees
+                    rel_placement = jcs1.inverse() * jcs2
+                    angle_deg = rel_placement.Rotation.getYawPitchRoll()[0]
+
+                    joints.append(
+                        f"• {obj.Label}: {b1.Label} ↔ {b2.Label} | X-Axis Angle: {angle_deg:.2f}°"
+                    )
+
+        # Display Popup
+        report = f"=== Grounded Parts ===\n{', '.join(grounded) or 'None'}\n\n=== Joint Connections ===\n"
+        report += "\n".join(joints) if joints else "No joints detected."
+
+        msg = QtWidgets.QMessageBox()
+        msg.setWindowTitle("Assembly Info")
+        msg.setText(report)
+        msg.setIcon(QtWidgets.QMessageBox.NoIcon)
+        msg.exec_()
 
     def _extract_fixed_axis(self, obj):
         """Extract axis and origin from a Fixed joint"""
