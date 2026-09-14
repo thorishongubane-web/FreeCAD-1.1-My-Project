@@ -21,6 +21,7 @@
 #                                                                           *
 # **************************************************************************/
 
+import math
 import re
 import os
 import time
@@ -1465,22 +1466,20 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
         
         return App.Vector(0, 0, 1), App.Vector(0, 0, 0)
 
-    def show_assembly_info(self):
-        """Displays grounded parts and joint connections with exact JCS Z-axis rotation angles."""
+    def show_assembly_info(self=None):
+        """Procedural Reality Check dialog with an aligned, compact Close button."""
         doc = App.ActiveDocument
         if not doc:
             return
 
         def get_target(ref):
-            """Unwraps nested reference tuples to return the FreeCAD object."""
             while isinstance(ref, (list, tuple)) and ref:
                 ref = ref[0]
             return ref if hasattr(ref, "Label") else None
 
-        grounded, joints = [], []
-
+        # 1. Collect Grounded Parts
+        grounded = []
         for obj in doc.Objects:
-            # 1. Check for Grounded Parts
             if hasattr(obj, "ObjectToGround") or hasattr(obj, "DataObjectToGround"):
                 ref = getattr(
                     obj, "ObjectToGround", getattr(obj, "DataObjectToGround", None)
@@ -1489,63 +1488,179 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
                 if target and target.Label not in grounded:
                     grounded.append(target.Label)
 
-            # 2. Kinematic Joints
-            elif hasattr(obj, "Reference1") or hasattr(obj, "DataReference1"):
-                b1 = get_target(
-                    getattr(
-                        obj, "Reference1", getattr(obj, "DataReference1", None)
-                    )
+        # 2. Helper to Calculate Current RHR Angle
+        def calc_angle(joint_obj):
+            b1 = get_target(
+                getattr(
+                    joint_obj,
+                    "Reference1",
+                    getattr(joint_obj, "DataReference1", None),
                 )
-                b2 = get_target(
-                    getattr(
-                        obj, "Reference2", getattr(obj, "DataReference2", None)
-                    )
+            )
+            b2 = get_target(
+                getattr(
+                    joint_obj,
+                    "Reference2",
+                    getattr(joint_obj, "DataReference2", None),
                 )
+            )
+            if not b1 or not b2:
+                return None, None, None
 
-                if b1 and b2:
-                    # Local connector placements & offsets
-                    p1 = getattr(
-                        obj,
-                        "DataPlacement1",
-                        getattr(obj, "Placement1", App.Placement()),
+            p1 = getattr(
+                joint_obj,
+                "DataPlacement1",
+                getattr(joint_obj, "Placement1", App.Placement()),
+            )
+            p2 = getattr(
+                joint_obj,
+                "DataPlacement2",
+                getattr(joint_obj, "Placement2", App.Placement()),
+            )
+            o1 = getattr(
+                joint_obj,
+                "DataOffset1",
+                getattr(joint_obj, "Offset1", App.Placement()),
+            )
+            o2 = getattr(
+                joint_obj,
+                "DataOffset2",
+                getattr(joint_obj, "Offset2", App.Placement()),
+            )
+
+            jcs1 = b1.Placement * p1 * o1
+            jcs2 = b2.Placement * p2 * o2
+
+            if b2.Label in grounded:
+                base_jcs, moving_jcs = jcs2, jcs1
+            else:
+                base_jcs, moving_jcs = jcs1, jcs2
+
+            rel_p = base_jcs.inverse() * moving_jcs
+            x_moving = rel_p.Rotation.multVec(App.Vector(1, 0, 0))
+            angle_deg = math.degrees(math.atan2(x_moving.y, x_moving.x))
+            return angle_deg, b1, b2
+
+        # 3. Helper to Adjust Angle and Drive 3D Viewport
+        def adjust_angle(joint_obj, label_widget):
+            curr_angle, b1, b2 = calc_angle(joint_obj)
+            if curr_angle is None:
+                return
+
+            target_angle, ok = QtWidgets.QInputDialog.getDouble(
+                dialog,
+                "Set Joint Angle",
+                f"Enter target angle for {joint_obj.Label} (°):",
+                value=curr_angle,
+                decimals=2,
+            )
+            if not ok:
+                return
+
+            p1 = getattr(
+                joint_obj,
+                "DataPlacement1",
+                getattr(joint_obj, "Placement1", App.Placement()),
+            )
+            p2 = getattr(
+                joint_obj,
+                "DataPlacement2",
+                getattr(joint_obj, "Placement2", App.Placement()),
+            )
+            o1 = getattr(
+                joint_obj,
+                "DataOffset1",
+                getattr(joint_obj, "Offset1", App.Placement()),
+            )
+            o2 = getattr(
+                joint_obj,
+                "DataOffset2",
+                getattr(joint_obj, "Offset2", App.Placement()),
+            )
+
+            if b2.Label in grounded:
+                base_body, moving_body = b2, b1
+                p_base, p_moving = p2, p1
+                o_base, o_moving = o2, o1
+            else:
+                base_body, moving_body = b1, b2
+                p_base, p_moving = p1, p2
+                o_base, o_moving = o1, o2
+
+            base_jcs = base_body.Placement * p_base * o_base
+            moving_jcs = moving_body.Placement * p_moving * o_moving
+
+            rel_p = base_jcs.inverse() * moving_jcs
+            new_rel_rotation = App.Rotation(App.Vector(0, 0, 1), target_angle)
+            new_rel_placement = App.Placement(rel_p.Base, new_rel_rotation)
+
+            new_moving_jcs = base_jcs * new_rel_placement
+            connector_offset = p_moving * o_moving
+            moving_body.Placement = new_moving_jcs * connector_offset.inverse()
+
+            doc.recompute()
+
+            new_angle, _, _ = calc_angle(joint_obj)
+            label_widget.setText(
+                f"• {joint_obj.Label}: {b1.Label} ↔ {b2.Label} | Angle: {new_angle:.2f}°"
+            )
+
+        # 4. Dialog Assembly
+        dialog = QtWidgets.QDialog()
+        dialog.setWindowTitle("Reality Check - Assembly Diagnostics")
+        dialog.resize(500, 300)
+
+        layout = QtWidgets.QVBoxLayout(dialog)
+
+        # Grounded Section
+        layout.addWidget(QtWidgets.QLabel("<b>=== Grounded Parts ===</b>"))
+        layout.addWidget(
+            QtWidgets.QLabel(", ".join(grounded) if grounded else "None")
+        )
+        layout.addSpacing(10)
+
+        # Joint Section
+        layout.addWidget(QtWidgets.QLabel("<b>=== Joint Connections ===</b>"))
+
+        has_joints = False
+        for obj in doc.Objects:
+            if hasattr(obj, "Reference1") or hasattr(obj, "DataReference1"):
+                angle, b1, b2 = calc_angle(obj)
+                if angle is not None:
+                    has_joints = True
+                    row = QtWidgets.QHBoxLayout()
+
+                    lbl = QtWidgets.QLabel(
+                        f"• {obj.Label}: {b1.Label} ↔ {b2.Label} | Angle: {angle:.2f}°"
                     )
-                    p2 = getattr(
-                        obj,
-                        "DataPlacement2",
-                        getattr(obj, "Placement2", App.Placement()),
-                    )
-                    o1 = getattr(
-                        obj,
-                        "DataOffset1",
-                        getattr(obj, "Offset1", App.Placement()),
-                    )
-                    o2 = getattr(
-                        obj,
-                        "DataOffset2",
-                        getattr(obj, "Offset2", App.Placement()),
+                    btn = QtWidgets.QPushButton("Adjust Angle")
+
+                    btn.clicked.connect(
+                        lambda checked=False, j=obj, l=lbl: adjust_angle(j, l)
                     )
 
-                    # World placements using FreeCAD's '*' operator
-                    jcs1 = b1.Placement * p1 * o1
-                    jcs2 = b2.Placement * p2 * o2
+                    row.addWidget(lbl)
+                    row.addStretch()
+                    row.addWidget(btn)
+                    layout.addLayout(row)
 
-                    # Extract Z-axis angle (Yaw) directly in degrees
-                    rel_placement = jcs1.inverse() * jcs2
-                    angle_deg = rel_placement.Rotation.getYawPitchRoll()[0]
+        if not has_joints:
+            layout.addWidget(QtWidgets.QLabel("No joints detected."))
 
-                    joints.append(
-                        f"• {obj.Label}: {b1.Label} ↔ {b2.Label} | X-Axis Angle: {angle_deg:.2f}°"
-                    )
+        layout.addStretch()
 
-        # Display Popup
-        report = f"=== Grounded Parts ===\n{', '.join(grounded) or 'None'}\n\n=== Joint Connections ===\n"
-        report += "\n".join(joints) if joints else "No joints detected."
+        # Small Right-Aligned Close Button
+        btn_close = QtWidgets.QPushButton("Close")
+        btn_close.setFixedWidth(80)
+        btn_close.clicked.connect(dialog.accept)
 
-        msg = QtWidgets.QMessageBox()
-        msg.setWindowTitle("Assembly Info")
-        msg.setText(report)
-        msg.setIcon(QtWidgets.QMessageBox.NoIcon)
-        msg.exec_()
+        bottom_layout = QtWidgets.QHBoxLayout()
+        bottom_layout.addStretch()
+        bottom_layout.addWidget(btn_close)
+
+        layout.addLayout(bottom_layout)
+
+        dialog.exec_()
 
     def _extract_fixed_axis(self, obj):
         """Extract axis and origin from a Fixed joint"""
