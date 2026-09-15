@@ -1063,7 +1063,14 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
         )
 
         self.highlightAxisButton.setText("Confirm Assembly")
+        self.highlightAxisButton.show()
+
         self.RecheckButton.setText("Recheck assembly")
+        self.RecheckButton.show()
+
+        # Step 1 has detailed assembly information
+        self.infoButton.show()
+
         self.updateBackButtonState()
 
     def RecheckAssembly(self):
@@ -1342,7 +1349,11 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
         )
 
         self.highlightAxisButton.setText("Confirm Axis")
+        self.highlightAxisButton.show()
+
         self.RecheckButton.setText("Recheck axis")
+        self.RecheckButton.show()
+        
         self.updateBackButtonState()
     # ============================================================
     # JOINT EXTRACTION HELPERS
@@ -1709,6 +1720,7 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
         return f"Body {index}"
 
     def highlightCentreOfMass(self, point):
+        self.currentStep = 2
 
         import pivy.coin as coin
 
@@ -1777,7 +1789,7 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
 
         sphere = coin.SoSphere()
 
-        sphere.radius = 8.0
+        sphere.radius = 4.0
 
         # ------------------------------------------
         # Build graphic
@@ -1914,7 +1926,6 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
         # --------------------------------------------------
 
         self.assistantStatus.setText(
-            "<b>Step 3 of 6</b><br><br>"
             "<b>Initial Body State</b><br><br>"
             f"I identified <b>{body.Label}</b> as the moving body.<br><br>"
             "The first DAP3D input is the body's initial "
@@ -1929,6 +1940,13 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
             "<b>Is this correct?</b>"
         )
 
+        # Hide Driving Axis buttons
+        self.highlightAxisButton.hide()
+        self.RecheckButton.hide()
+
+        self.assistantButtonYes.setText("✓ Yes")
+        self.assistantButtonNo.setText("↻ Recalculate")
+        
         self.assistantButtonYes.show()
         self.assistantButtonNo.show()
 
@@ -2746,8 +2764,44 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
         
         # Re-display the previous step
         if self.currentStep == 0:
+            # Remove the highlighted driving axis
+            if hasattr(self, "axisGraphic") and self.axisGraphic is not None:
+                try:
+                    self.view.getSceneGraph().removeChild(
+                        self.axisGraphic
+                    )
+                    self.axisGraphic = None
+
+                    App.Console.PrintMessage(
+                        "Driving axis highlight removed.\n"
+                    )
+
+                except Exception as e:
+                    App.Console.PrintError(
+                        f"Could not remove axis highlight: {e}\n"
+                    )
             self.analyseAssembly()
         elif self.currentStep == 1:
+            # Remove centre-of-mass highlight
+            if hasattr(self, "comGraphic") and self.comGraphic is not None:
+                try:
+                    self.view.getSceneGraph().removeChild(
+                        self.comGraphic
+                    )
+
+                    self.comGraphic = None
+
+                    App.Console.PrintMessage(
+                        "Centre of mass highlight removed.\n"
+                    )
+
+                except Exception as e:
+                    App.Console.PrintError(
+                        f"Could not remove COM highlight: {e}\n"
+                    )
+            # Remove Step 3 buttons
+            self.assistantButtonYes.hide()
+            self.assistantButtonNo.hide()
             self.highlightDrivingAxis()
         elif self.currentStep == 2:
             self.showInitialBodyState()
