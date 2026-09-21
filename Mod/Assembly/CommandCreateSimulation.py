@@ -21,10 +21,15 @@
 #                                                                           *
 # **************************************************************************/
 
+import configparser
+import glob
 import math
 import re
 import os
 import time
+import importFCMat
+import Materials
+from tkinter import dialog
 import FreeCAD as App
 
 from pivy import coin
@@ -1807,7 +1812,379 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
 
         self.comGraphic = annotation
 
+    def load_material_database(self):
+        """Loads materials via FreeCAD's Materials Python API (1.0+).
+        Distinguishes physical engineering materials from visual/hatch presets."""
+
+        materials = []
+        appearance_count = 0
+
+        try:
+            manager = Materials.MaterialManager()
+        except Exception as e:
+            print(f">>> Material DB load error: Could not initialize MaterialManager ({e})")
+            return materials
+
+        def extract_density_kg_m3(material):
+            """Attempts to read density via Modern 1.0 API, Legacy Dicts, and PropertyObjects.
+            Returns (density_float, is_physical_material)"""
+        
+            def parse_to_kg_m3(val):
+                if val is None:
+                    return None
+                try:
+                    # 1. FreeCAD Quantity object
+                    if hasattr(val, "getValueAs"):
+                        res = val.getValueAs("kg/m^3")
+                        return float(res.Value if hasattr(res, "Value") else res)
+                
+                    # 2. Quantity with .Value property
+                    if hasattr(val, "Value") and hasattr(val, "Unit"):
+                        q_obj = App.Units.Quantity(str(val))
+                        res = q_obj.getValueAs("kg/m^3")
+                        return float(res.Value if hasattr(res, "Value") else res)
+                
+                    # 3. Numeric float/int
+                    if isinstance(val, (int, float)):
+                        return float(val)
+                
+                    # 4. String representation (e.g., "7850 kg/m^3" or "2.7e-6 kg/mm^3")
+                    if isinstance(val, str) and val.strip():
+                        q_obj = App.Units.Quantity(val)
+                        res = q_obj.getValueAs("kg/m^3")
+                        return float(res.Value if hasattr(res, "Value") else res)
+                except Exception:
+                    pass
+                return None
+
+            # Check Strategy A: Modern FreeCAD 1.0+ API
+            try:
+                if hasattr(material, "getPhysicalValue"):
+                    d = parse_to_kg_m3(material.getPhysicalValue("Density"))
+                    if d is not None and d > 0:
+                        return d, True
+            except Exception:
+                pass
+
+            # Check Strategy B: Legacy PhysicalProperties dictionary
+            try:
+                if hasattr(material, "PhysicalProperties"):
+                    props = material.PhysicalProperties
+                    if hasattr(props, "get") and props.get("Density"):
+                        d = parse_to_kg_m3(props.get("Density"))
+                        if d is not None and d > 0:
+                            return d, True
+            except Exception:
+                pass
+
+            # Check Strategy C: Direct key indexing material["Density"]
+            try:
+                if hasattr(material, "__getitem__"):
+                    d = parse_to_kg_m3(material["Density"])
+                    if d is not None and d > 0:
+                        return d, True
+            except Exception:
+                pass
+
+            # Check Strategy D: PropertyObjects dictionary
+            try:
+                if hasattr(material, "PropertyObjects") and "Density" in material.PropertyObjects:
+                    p_obj = material.PropertyObjects["Density"]
+                    d = parse_to_kg_m3(getattr(p_obj, "Value", p_obj))
+                    if d is not None and d > 0:
+                        return d, True
+            except Exception:
+                pass
+
+            return 0.0, False
+
+        try:
+            all_materials = manager.Materials
+        except Exception as e:
+            print(f">>> Material DB load error: {e}")
+            return materials
+
+        if hasattr(all_materials, "items"):
+            material_iter = list(all_materials.items())
+        else:
+            material_iter = [(None, m) for m in all_materials]
+
+        def get_path(material, mat_uuid):
+            library_root = getattr(material, "LibraryRoot", None)
+            directory = getattr(material, "Directory", None)
+
+            if library_root and directory:
+                combined = os.path.join(str(library_root), str(directory))
+                if os.path.exists(combined):
+                    return combined
+                if os.path.exists(str(directory)):
+                    return str(directory)
+                return combined
+
+            if directory:
+                return str(directory)
+            if library_root:
+                return str(library_root)
+
+            return f"uuid:{mat_uuid}" if mat_uuid else "unknown"
+
+        for key, material in material_iter:
+            if material is None:
+                continue
+
+            mat_name = getattr(material, "Name", None) or (str(key) if key else "Unknown")
+            mat_uuid = getattr(material, "UUID", None) or key
+            mat_path = get_path(material, mat_uuid)
+
+            density_val, density_ok = extract_density_kg_m3(material)
+
+            if density_ok:
+                materials.append({
+                    "name": mat_name,
+                    "Name": mat_name,
+                    "uuid": mat_uuid,
+                    "UUID": mat_uuid,
+                    "density": density_val,
+                    "Density": density_val,
+                    "density_reliable": True,
+                    "path": mat_path,
+                    "Path": mat_path,
+                })
+            else:
+                # Skip non-physical items (Hatch pattern cards, visual appearance presets)
+                appearance_count += 1
+
+        print(f">>> Material DB loaded: {len(materials)} physical materials ready. ({appearance_count} visual/hatch presets skipped)")
+
+        return materials
+
+    def run_material_selector(self):
+        """Manages the embedded sidebar material selection UI."""
+        body = self.movingBody
+
+        # Always reload database to avoid caching empty lists
+        self.materials_db = self.load_material_database()
+
+        if not hasattr(self, "mat_container"):
+            self.mat_container = QtWidgets.QWidget()
+            layout = QtWidgets.QVBoxLayout(self.mat_container)
+            layout.setContentsMargins(0, 5, 0, 5)
+
+            lbl_parts = QtWidgets.QLabel("<b>Assembly Parts:</b>")
+            self.list_parts = QtWidgets.QListWidget()
+            self.list_parts.setMaximumHeight(100)
+
+            lbl_search = QtWidgets.QLabel("<b>Search Material:</b>")
+            self.edit_name_search = QtWidgets.QLineEdit()
+            self.edit_name_search.setPlaceholderText("Filter by name (Steel, ABS)...")
+
+            density_row = QtWidgets.QHBoxLayout()
+            self.spin_density_target = QtWidgets.QDoubleSpinBox()
+            self.spin_density_target.setRange(0, 30000)
+            self.spin_density_target.setValue(0)  # Default 0 = Any Density
+            self.spin_density_target.setSuffix(" kg/m³")
+            self.spin_density_target.setSpecialValueText("Any Density")
+
+            self.spin_density_tol = QtWidgets.QDoubleSpinBox()
+            self.spin_density_tol.setRange(1, 5000)
+            self.spin_density_tol.setValue(200)
+            self.spin_density_tol.setPrefix("± ")
+
+            density_row.addWidget(self.spin_density_target, 2)
+            density_row.addWidget(self.spin_density_tol, 1)
+
+            self.table_mat = QtWidgets.QTableWidget()
+            self.table_mat.setColumnCount(2)
+            self.table_mat.setHorizontalHeaderLabels(["Name", "Density"])
+            self.table_mat.horizontalHeader().setStretchLastSection(True)
+            self.table_mat.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
+            self.table_mat.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
+            self.table_mat.setMaximumHeight(130)
+
+            self.btn_apply_mat = QtWidgets.QPushButton("Apply Material to Selected Part")
+
+            layout.addWidget(lbl_parts)
+            layout.addWidget(self.list_parts)
+            layout.addWidget(lbl_search)
+            layout.addWidget(self.edit_name_search)
+            layout.addLayout(density_row)
+            layout.addWidget(self.table_mat)
+            layout.addWidget(self.btn_apply_mat)
+
+            self.assistantLayout.addWidget(self.mat_container)
+
+            # Signal Callbacks
+            def on_sidebar_part_selected(current_item, previous_item=None):
+                Gui.Selection.clearSelection()
+                if not current_item:
+                    return
+                doc = App.ActiveDocument
+                if doc:
+                    obj_name = current_item.data(QtCore.Qt.UserRole)
+                    obj = doc.getObject(obj_name)
+                    if obj:
+                        Gui.Selection.addSelection(obj)
+
+            def filter_sidebar_materials(*args):
+                query = self.edit_name_search.text().lower().strip()
+                target_density = self.spin_density_target.value()
+                tol = self.spin_density_tol.value()
+
+                self.table_mat.setRowCount(0)
+
+                for mat in getattr(self, "materials_db", []):
+                    matches_name = (not query) or (query in mat["name"].lower())
+                    # Match if density filter is off (0), if density is close, OR if card density is unparsed
+                    matches_density = (
+                        target_density == 0
+                        or mat["density"] == 0.0
+                        or abs(mat["density"] - target_density) <= tol
+                    )
+
+                    if matches_name and matches_density:
+                        row = self.table_mat.rowCount()
+                        self.table_mat.insertRow(row)
+
+                        item_name = QtWidgets.QTableWidgetItem(mat["name"])
+                        item_name.setData(QtCore.Qt.UserRole, mat["path"])
+
+                        dens_str = f"{mat['density']:.0f}" if mat["density"] > 0 else "N/A"
+                        item_density = QtWidgets.QTableWidgetItem(dens_str)
+
+                        self.table_mat.setItem(row, 0, item_name)
+                        self.table_mat.setItem(row, 1, item_density)
+
+            def apply_sidebar_material():
+                curr_part_item = self.list_parts.currentItem()
+                if not curr_part_item:
+                    return
+
+                selected_rows = self.table_mat.selectedItems()
+                if not selected_rows:
+                    return
+
+                card_path = self.table_mat.item(selected_rows[0].row(), 0).data(QtCore.Qt.UserRole)
+                mat_name = self.table_mat.item(selected_rows[0].row(), 0).text()
+
+                doc = App.ActiveDocument
+                if not doc:
+                    return
+
+                obj_name = curr_part_item.data(QtCore.Qt.UserRole)
+                obj = doc.getObject(obj_name)
+
+                if obj:
+                    card_data = None
+                    if card_path and os.path.exists(card_path):
+                        try:
+                            import importFCMat
+                            card_data = importFCMat.read(card_path)
+                        except Exception:
+                            try:
+                                import Material
+                                if hasattr(Material, 'importFCMat'):
+                                    card_data = Material.importFCMat(card_path)
+                            except Exception:
+                                pass
+
+                    if not hasattr(obj, "Material"):
+                        try:
+                            obj.addProperty("App::PropertyMaterial", "Material", "Base", "Material Card")
+                        except Exception:
+                            pass
+
+                    if hasattr(obj, "Material"):
+                        try:
+                            if card_data:
+                                obj.Material = card_data
+                            else:
+                                obj.Material = {"Name": mat_name}
+                        except Exception:
+                            try:
+                                obj.Material = mat_name
+                            except Exception:
+                                pass
+
+                    doc.recompute()
+                    curr_part_item.setText(f"{obj.Label} [{mat_name}]")
+                    Gui.Selection.clearSelection()
+                    Gui.Selection.addSelection(obj)
+
+            self.list_parts.currentItemChanged.connect(on_sidebar_part_selected)
+            self.edit_name_search.textChanged.connect(filter_sidebar_materials)
+            self.spin_density_target.valueChanged.connect(filter_sidebar_materials)
+            self.spin_density_tol.valueChanged.connect(filter_sidebar_materials)
+            self.btn_apply_mat.clicked.connect(apply_sidebar_material)
+
+            self._filter_sidebar_materials = filter_sidebar_materials
+
+        self.mat_container.show()
+
+        # Identifies actual assembly component bodies
+        def is_assembly_part(obj):
+            # Skip utility/datum objects
+            skip_types = ("App::Origin", "App::Plane", "App::Line", "App::Point", "App::Axis", "Sketcher::SketchObject")
+            if any(obj.isDerivedFrom(t) for t in skip_types if hasattr(obj, "isDerivedFrom")):
+                return False
+
+            type_id = getattr(obj, "TypeId", "")
+
+            # Skip sub-features inside PartDesign bodies (Pad, Pocket, etc.)
+            if type_id.startswith("PartDesign::") and type_id != "PartDesign::Body":
+                return False
+
+            # Skip top container "Assembly" if it holds sub-parts
+            if obj.Label.lower() == "assembly" or type_id == "Assembly::AssemblyObject":
+                return False
+
+            # If Body is inside an App::Part (e.g. Body inside Pin), let Pin represent it
+            if type_id == "PartDesign::Body":
+                for parent in getattr(obj, "InList", []):
+                    if parent.TypeId == "App::Part":
+                        return False
+
+            # Accept App::Part, PartDesign::Body, or shapes
+            if type_id in ("App::Part", "PartDesign::Body") or (hasattr(obj, "Shape") and not obj.Shape.isNull()):
+                return True
+
+            return False
+
+        # Populate Assembly Parts List
+        self.list_parts.clear()
+        doc = App.ActiveDocument
+        if doc:
+            target_row = 0
+            row_counter = 0
+
+            for obj in doc.Objects:
+                if not is_assembly_part(obj):
+                    continue
+
+                current_mat = "None"
+                if hasattr(obj, "Material") and obj.Material:
+                    current_mat = obj.Material.get("CardName", obj.Material.get("Name", "Assigned"))
+
+                item = QtWidgets.QListWidgetItem(f"{obj.Label} [{current_mat}]")
+                item.setData(QtCore.Qt.UserRole, obj.Name)
+                self.list_parts.addItem(item)
+
+                if body and obj.Name == body.Name:
+                    target_row = row_counter
+
+                row_counter += 1
+
+            if self.list_parts.count() > 0:
+                self.list_parts.setCurrentRow(target_row)
+
+        self._filter_sidebar_materials()
+
     def showInitialBodyState(self):
+
+        # --------------------------------------------------
+        # CALL MATERIAL SELECTOR FUNCTION
+        # --------------------------------------------------
+        self.run_material_selector()
+
         self.currentStep = 2
 
         App.Console.PrintMessage("\n=== Initial Body State ===\n")
@@ -2592,7 +2969,7 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
 
         QtWidgets.QApplication.processEvents()
 
-        self.showInitialBodyState()
+        self.showInitialBodyState()    
 
     def setUiInitialValues(self):
         self.form.TimeStartSpinBox.setProperty("rawValue", self.simFeaturePy.aTimeStart.Value)
