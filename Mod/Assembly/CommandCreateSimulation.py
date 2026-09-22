@@ -59,6 +59,123 @@ __author__ = "Ondsel"
 __url__ = "https://www.freecad.org"
 
 
+class GravityDirectionDialog(QtWidgets.QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Set Gravity Direction")
+        # Keep window on top so user can click the 3D View freely
+        self.setWindowFlags(self.windowFlags() | QtCore.Qt.WindowStaysOnTopHint)
+        
+        layout = QtWidgets.QVBoxLayout(self)
+
+        # 1. Quick Direction Presets
+        layout.addWidget(QtWidgets.QLabel("<b>Quick Presets:</b>"))
+        preset_layout = QtWidgets.QGridLayout()
+        
+        btn_z_neg = QtWidgets.QPushButton("-Z (Down)")
+        btn_z_pos = QtWidgets.QPushButton("+Z (Up)")
+        btn_y_neg = QtWidgets.QPushButton("-Y")
+        btn_y_pos = QtWidgets.QPushButton("+Y")
+        btn_x_neg = QtWidgets.QPushButton("-X")
+        btn_x_pos = QtWidgets.QPushButton("+X")
+
+        preset_layout.addWidget(btn_z_neg, 0, 0)
+        preset_layout.addWidget(btn_z_pos, 0, 1)
+        preset_layout.addWidget(btn_y_neg, 1, 0)
+        preset_layout.addWidget(btn_y_pos, 1, 1)
+        preset_layout.addWidget(btn_x_neg, 2, 0)
+        preset_layout.addWidget(btn_x_pos, 2, 1)
+        layout.addLayout(preset_layout)
+
+        # Preset Connections
+        btn_z_neg.clicked.connect(lambda: self.set_vector(0, 0, -1))
+        btn_z_pos.clicked.connect(lambda: self.set_vector(0, 0, 1))
+        btn_y_neg.clicked.connect(lambda: self.set_vector(0, -1, 0))
+        btn_y_pos.clicked.connect(lambda: self.set_vector(0, 1, 0))
+        btn_x_neg.clicked.connect(lambda: self.set_vector(-1, 0, 0))
+        btn_x_pos.clicked.connect(lambda: self.set_vector(1, 0, 0))
+
+        layout.addSpacing(10)
+
+        # 2. Interactive Selection Button
+        self.btn_pick = QtWidgets.QPushButton("🎯 Pick Face/Edge from 3D View")
+        self.btn_pick.setStyleSheet("font-weight: bold; padding: 6px;")
+        self.btn_pick.clicked.connect(self.pick_direction_from_3d)
+        layout.addWidget(self.btn_pick)
+
+        # Status feedback label for selection
+        self.lbl_status = QtWidgets.QLabel("Select a element in 3D view and click Pick.")
+        self.lbl_status.setStyleSheet("color: gray; font-size: 10px;")
+        layout.addWidget(self.lbl_status)
+
+        layout.addSpacing(10)
+
+        # 3. Manual Inputs & Invert Option
+        input_layout = QtWidgets.QHBoxLayout()
+        input_layout.addWidget(QtWidgets.QLabel("Vector:"))
+        self.input_x = QtWidgets.QLineEdit("0.0")
+        self.input_y = QtWidgets.QLineEdit("0.0")
+        self.input_z = QtWidgets.QLineEdit("-1.0")
+        
+        for f in (self.input_x, self.input_y, self.input_z):
+            f.setFixedWidth(45)
+            input_layout.addWidget(f)
+            
+        btn_invert = QtWidgets.QPushButton("Reverse 🔄")
+        btn_invert.clicked.connect(self.invert_vector)
+        input_layout.addWidget(btn_invert)
+        layout.addLayout(input_layout)
+
+        # OK / Cancel Buttons
+        btn_box = QtWidgets.QDialogButtonBox(
+            QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel
+        )
+        btn_box.accepted.connect(self.accept)
+        btn_box.rejected.connect(self.reject)
+        layout.addWidget(btn_box)
+
+    def set_vector(self, x, y, z):
+        self.input_x.setText(f"{x:.4f}")
+        self.input_y.setText(f"{y:.4f}")
+        self.input_z.setText(f"{z:.4f}")
+        self.lbl_status.setText(f"Vector updated: ({x}, {y}, {z})")
+
+    def invert_vector(self):
+        vec = self.get_gravity_vector()
+        self.set_vector(-vec.x, -vec.y, -vec.z)
+
+    def pick_direction_from_3d(self):
+        selection = Gui.Selection.getSelectionEx()
+        if not selection or not selection[0].SubObjects:
+            self.lbl_status.setText("⚠️ Click a face or edge in 3D view first!")
+            return
+
+        sub_obj = selection[0].SubObjects[0]
+        direction = None
+
+        if hasattr(sub_obj, "normalAt"):
+            direction = sub_obj.normalAt(0, 0)
+        elif hasattr(sub_obj, "tangentAt"):
+            direction = sub_obj.tangentAt(0)
+
+        if direction:
+            direction.normalize()
+            self.set_vector(direction.x, direction.y, direction.z)
+            self.lbl_status.setText(f"Selected face/edge normal aligned!")
+
+    def get_gravity_vector(self):
+        try:
+            vec = App.Vector(
+                float(self.input_x.text()),
+                float(self.input_y.text()),
+                float(self.input_z.text())
+            )
+            if vec.Length > 0:
+                vec.normalize()
+            return vec
+        except ValueError:
+            return App.Vector(0, 0, -1)
+
 class CommandCreateSimulation:
     def __init__(self):
         pass
@@ -111,6 +228,16 @@ class CommandCreateSimulation:
         if dialog is not None:
             dialog.setAutoCloseOnDeletedDocument(True)
             dialog.setDocumentName(App.ActiveDocument.Name)
+            
+        # Prompt user to choose gravity direction
+        dialog = GravityDirectionDialog(Gui.getMainWindow())
+        if dialog.exec_() == QtWidgets.QDialog.Accepted:
+            self.gravity_vector = dialog.get_gravity_vector()
+        else:
+            # Fallback default if canceled
+            self.gravity_vector = App.Vector(0, 0, -1)
+
+        App.Console.PrintMessage(f"Active Gravity Direction: {self.gravity_vector}\n")
 
 
 ######### Simulation Object ###########
@@ -2548,6 +2675,28 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
         self.form.RunKinematicsButton.setEnabled(True)
         self.form.RunKinematicsButton.setToolTip("Run kinematics simulation")
 
+    def get_target_body(self):
+        """Retrieves and validates the current active moving body."""
+        # Priority 1: Use assigned class attribute if it exists and is valid
+        if hasattr(self, 'movingBody') and self.movingBody is not None:
+            return self.movingBody
+
+        # Priority 2: Fall back to active document selection if user clicked a body
+        selection = Gui.Selection.getSelection()
+        if selection:
+            for obj in selection:
+                if hasattr(obj, 'Shape') and obj.Shape.Volume > 0:
+                    return obj
+
+        # Priority 3: Fall back to the first Part/Body in the active document
+        doc = App.ActiveDocument
+        if doc:
+            for obj in doc.Objects:
+                if obj.isDerivedFrom("App::Part") or obj.isDerivedFrom("PartDesign::Body"):
+                    return obj
+
+    return None
+
     def export_simulation_calculations_to_csv(self):
         """Exports assembly parameters and physical calculation logs to a CSV file."""
         file_path, _ = QtWidgets.QFileDialog.getSaveFileName(
@@ -2569,6 +2718,18 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
                 writer.writerow(["Project Document", App.ActiveDocument.Name])
                 writer.writerow(["Moving Body", self.movingBody.Label if self.movingBody else "N/A"])
                 writer.writerow([])
+                
+                #material properties
+                density = body.Material['Density'] # Returns value in internal system units
+                volume = body.Shape.Volume  # Volume in mm^3
+                mass = volume * density     # Calculated mass
+                writer.writerow(["Property", "Value", "Unit"])
+                writer.writerow(["Gravity Vector", f"({gx:.3f}, {gy:.3f}, {gz:.3f})", "Unit Vector"])
+                writer.writerow(["Material", material_name, "N/A"])
+                writer.writerow(["Density", f"{density:.6e}", "kg/mm^3"])
+                writer.writerow(["Mass", f"{mass:.6f}", "kg"])
+                
+                
                 
                 # Initial Body State
                 writer.writerow(["=== INITIAL BODY STATE ==="])
