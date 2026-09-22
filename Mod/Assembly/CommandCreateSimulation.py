@@ -2695,10 +2695,10 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
                 if obj.isDerivedFrom("App::Part") or obj.isDerivedFrom("PartDesign::Body"):
                     return obj
 
-    return None
+        return None
 
     def export_simulation_calculations_to_csv(self):
-        """Exports assembly parameters and physical calculation logs to a CSV file."""
+        """Exports assembly parameters and physical calculation logs to a clean, multi-column CSV file."""
         file_path, _ = QtWidgets.QFileDialog.getSaveFileName(
             None,
             "Save Calculation Results CSV",
@@ -2709,69 +2709,91 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
         if not file_path:
             return
 
+        # 1. Safely resolve target body
+        body = self.get_target_body()
+        if body is None:
+            App.Console.PrintError("Error: No valid body found or selected in the model!\n")
+            return
+
+        # 2. Extract Gravity Vector
+        gravity_vec = getattr(self, 'gravity_vector', App.Vector(0, 0, -1))
+
+        # 3. Compute Material & Physical Properties safely
+        body_label = body.Label
+        volume_mm3 = body.Shape.Volume
+
+        density_kg_mm3 = 7.874e-6  # Default fallback (Steel in kg/mm^3)
+        material_name = "Default (Steel)"
+
+        if hasattr(body, "Material") and body.Material:
+            mat_map = body.Material
+            if "Name" in mat_map:
+                material_name = mat_map["Name"]
+            if "Density" in mat_map:
+                density_val = mat_map["Density"]
+                density_kg_m3 = float(density_val.split()[0]) if isinstance(density_val, str) else float(density_val)
+                density_kg_mm3 = density_kg_m3 / 1e9
+
+        mass_kg = volume_mm3 * density_kg_mm3
+
+        # 4. Write data using explicit commas and Excel delimiter hint
         try:
             with open(file_path, mode='w', newline='', encoding='utf-8') as csv_file:
-                writer = csv.writer(csv_file)
+                # Force Excel to recognize commas regardless of Windows locale
+                csv_file.write("sep=,\n")
                 
-                # Metadata
-                writer.writerow(["=== ASSEMBLY SIMULATION SUMMARY ==="])
-                writer.writerow(["Project Document", App.ActiveDocument.Name])
-                writer.writerow(["Moving Body", self.movingBody.Label if self.movingBody else "N/A"])
-                writer.writerow([])
+                writer = csv.writer(csv_file, delimiter=',', quoting=csv.QUOTE_MINIMAL)
                 
-                #material properties
-                density = body.Material['Density'] # Returns value in internal system units
-                volume = body.Shape.Volume  # Volume in mm^3
-                mass = volume * density     # Calculated mass
-                writer.writerow(["Property", "Value", "Unit"])
-                writer.writerow(["Gravity Vector", f"({gx:.3f}, {gy:.3f}, {gz:.3f})", "Unit Vector"])
-                writer.writerow(["Material", material_name, "N/A"])
-                writer.writerow(["Density", f"{density:.6e}", "kg/mm^3"])
-                writer.writerow(["Mass", f"{mass:.6f}", "kg"])
-                
-                
-                
-                # Initial Body State
-                writer.writerow(["=== INITIAL BODY STATE ==="])
-                if hasattr(self, 'movingBody') and self.movingBody:
-                    shape = self.movingBody.Shape
-                    com = shape.CenterOfMass
-                    q = self.movingBody.Placement.Rotation.Q
-                    
-                    writer.writerow(["Property", "X / e0", "Y / e1", "Z / e2", "Scalar / e3"])
-                    writer.writerow(["Centre of Mass (mm)", f"{com.x:.6f}", f"{com.y:.6f}", f"{com.z:.6f}", "N/A"])
-                    writer.writerow(["Centre of Mass (m)", f"{com.x/1000.0:.6f}", f"{com.y/1000.0:.6f}", f"{com.z/1000.0:.6f}", "N/A"])
-                    writer.writerow(["Euler Parameters (p)", f"{q[3]:.6f}", f"{q[0]:.6f}", f"{q[1]:.6f}", f"{q[2]:.6f}"])
+                # --- SECTION 1: METADATA ---
+                writer.writerow(["SECTION", "PARAMETER", "VALUE", "UNIT", "DETAILS / NOTES"])
+                writer.writerow(["Metadata", "Project Document", App.ActiveDocument.Name if App.ActiveDocument else "N/A", "", ""])
+                writer.writerow(["Metadata", "Target Moving Body", body_label, "", ""])
                 writer.writerow([])
 
-                # Mass & Inertia
-                writer.writerow(["=== MASS & INERTIA CALCULATIONS ==="])
-                if hasattr(self, 'movingBody') and self.movingBody:
-                    volume = shape.Volume
-                    writer.writerow(["Volume (mm^3)", f"{volume:.6e}"])
+                # --- SECTION 2: MATERIAL & GLOBAL PROPERTIES ---
+                writer.writerow(["SECTION", "PROPERTY", "VALUE", "UNIT", "DETAILS / NOTES"])
+                writer.writerow(["Environment", "Gravity Vector X", gravity_vec.x, "Unit Vector", "Directional Component"])
+                writer.writerow(["Environment", "Gravity Vector Y", gravity_vec.y, "Unit Vector", "Directional Component"])
+                writer.writerow(["Environment", "Gravity Vector Z", gravity_vec.z, "Unit Vector", "Directional Component"])
+                writer.writerow(["Material", "Material Name", material_name, "N/A", "Assigned CAD Material"])
+                writer.writerow(["Material", "Density", density_kg_mm3, "kg/mm^3", "Volumetric Mass Density"])
+                writer.writerow(["Material", "Mass", mass_kg, "kg", "Calculated Body Mass"])
+                writer.writerow(["Geometry", "Volume", volume_mm3, "mm^3", "Total Solid Volume"])
                 writer.writerow([])
 
-                # Joint Data
-                writer.writerow(["=== JOINT DIAGNOSTICS & DRIVING AXES ==="])
-                writer.writerow(["Joint Name", "Joint Type", "Axis X", "Axis Y", "Axis Z", "Origin X (mm)", "Origin Y (mm)", "Origin Z (mm)"])
+                # --- SECTION 3: INITIAL BODY STATE ---
+                shape = body.Shape
+                com = shape.CenterOfMass
+                q = body.Placement.Rotation.Q
+
+                writer.writerow(["SECTION", "PROPERTY", "X / e0", "Y / e1", "Z / e2", "Scalar / e3", "UNIT"])
+                writer.writerow(["Kinematics", "Centre of Mass (mm)", com.x, com.y, com.z, "", "mm"])
+                writer.writerow(["Kinematics", "Centre of Mass (m)", com.x / 1000.0, com.y / 1000.0, com.z / 1000.0, "", "m"])
+                writer.writerow(["Kinematics", "Euler Parameters (p)", q[0], q[1], q[2], q[3], "Quaternion"])
+                writer.writerow([])
+
+                # --- SECTION 4: JOINT DIAGNOSTICS & AXES ---
+                writer.writerow(["SECTION", "JOINT NAME", "JOINT TYPE", "AXIS X", "AXIS Y", "AXIS Z", "ORIGIN X (mm)", "ORIGIN Y (mm)", "ORIGIN Z (mm)"])
                 
                 if hasattr(self, 'currentJoint') and self.currentJoint:
                     axis = self.currentAxis
                     origin = self.currentOrigin
                     writer.writerow([
+                        "Joints",
                         self.currentJoint.Label,
                         self.currentJointType,
-                        f"{axis.x:.6f}", f"{axis.y:.6f}", f"{axis.z:.6f}",
-                         f"{origin.x:.6f}", f"{origin.y:.6f}", f"{origin.z:.6f}"
+                        axis.x, axis.y, axis.z,
+                        origin.x, origin.y, origin.z
                     ])
-                    
-                    
+                else:
+                    writer.writerow(["Joints", "N/A", "None Detected", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
 
             App.Console.PrintMessage(f"Calculation logs successfully exported to: {file_path}\n")
             
         except Exception as e:
             App.Console.PrintError(f"Failed to export CSV: {e}\n")
-   
+    
+    
     def recalculateMassProperties(self):
 
         App.Console.PrintMessage(
