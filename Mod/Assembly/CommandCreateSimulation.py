@@ -1725,7 +1725,7 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
         return f"Body {index}"
 
     def highlightCentreOfMass(self, point):
-        self.currentStep = 2
+        self.currentStep = 3
 
         import pivy.coin as coin
 
@@ -2179,12 +2179,6 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
         self._filter_sidebar_materials()
 
     def showInitialBodyState(self):
-
-        # --------------------------------------------------
-        # CALL MATERIAL SELECTOR FUNCTION
-        # --------------------------------------------------
-        self.run_material_selector()
-
         self.currentStep = 2
 
         App.Console.PrintMessage("\n=== Initial Body State ===\n")
@@ -2365,7 +2359,7 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
 
 
     def showMassProperties(self):
-        self.currentStep = 3
+        self.currentStep = 5
 
         App.Console.PrintMessage(
             "\n=== Mass Properties ===\n"
@@ -2581,7 +2575,7 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
         )
 
     def confirmMassProperties(self):
-        self.currentStep = 4
+        self.currentStep = 5
 
         App.Console.PrintMessage(
             "Mass properties confirmed.\n"
@@ -2599,7 +2593,7 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
 
     def showJointProperties(self):
         """Step 5: Display and confirm joint propertieS"""
-        self.currentStep = 5	
+        self.currentStep = 6	
         
         App.Console.PrintMessage("\n=== Joint Properties ===\n")
         
@@ -2730,7 +2724,7 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
         
         # Display in Assistant
         self.assistantStep(
-            5,
+            6,
             6,
             "Joint Properties",
             f"""
