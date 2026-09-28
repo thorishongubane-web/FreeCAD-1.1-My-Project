@@ -2697,8 +2697,9 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
 
         return None
 
+    
     def export_simulation_calculations_to_csv(self):
-        """Exports assembly parameters and physical calculation logs to a clean, multi-column CSV file."""
+        """Exports assembly parameters and physical calculation logs to a CSV file matching the required sectioned layout."""
         file_path, _ = QtWidgets.QFileDialog.getSaveFileName(
             None,
             "Save Calculation Results CSV",
@@ -2709,90 +2710,235 @@ class TaskAssemblyCreateSimulation(QtCore.QObject):
         if not file_path:
             return
 
-        # 1. Safely resolve target body
-        body = self.get_target_body()
-        if body is None:
+        # Common engineering materials: (name, density in kg/m^3).
+        # Used ONLY as a fallback to name a material from its density when FreeCAD
+        # gives us a density but no material name.
+        KNOWN_MATERIALS = [
+            ("Magnesium", 1740), ("Aluminium", 2700), ("Titanium", 4500),
+            ("Zinc", 7140), ("Cast Iron", 7200), ("Steel", 7850),
+            ("Stainless Steel", 8000), ("Brass", 8500), ("Nickel", 8900),
+            ("Copper", 8960), ("Lead", 11340),
+            ("ABS Plastic", 1050), ("PLA Plastic", 1240), ("Nylon", 1150),
+            ("Polycarbonate", 1200), ("Acrylic (PMMA)", 1180),
+        ]
+
+        def guess_material_from_density(density_kg_mm3, tolerance=0.03):
+            """Returns 'Name (estimated from density)' or None if nothing is within tolerance."""
+            if density_kg_mm3 is None:
+                return None
+            d = density_kg_mm3 * 1e9  # kg/mm^3 -> kg/m^3
+            best = min(KNOWN_MATERIALS, key=lambda m: abs(m[1] - d))
+            if abs(best[1] - d) / best[1] <= tolerance:
+                return f"{best[0]} (estimated from density)"
+            return None
+
+        def density_to_kg_mm3(val):
+            """Convert any FreeCAD density representation to kg/mm^3."""
+            if val is None:
+                return None
+            # FreeCAD Quantity object (has getValueAs)
+            if hasattr(val, "getValueAs"):
+                try:
+                    return val.getValueAs("kg/m^3") / 1e9
+                except Exception:
+                    pass
+            # String such as '7900 kg/m^3'
+            if isinstance(val, str):
+                try:
+                    return App.Units.Quantity(val).getValueAs("kg/m^3") / 1e9
+                except Exception:
+                    try:
+                        num = float(val.split()[0])
+                        return num / 1e9 if num > 1.0 else num
+                    except Exception:
+                        return None
+            # Bare number (no unit info): assume kg/m^3 if large, else already kg/mm^3
+            if isinstance(val, (int, float)):
+                return val / 1e9 if val > 1.0 else val
+            return None
+
+        def find_material_holders(obj):
+            """The object itself, its linked object, and any child solids (for App::Part / Body)."""
+            holders = [obj]
+            try:
+                linked = obj.getLinkedObject(True)
+                if linked is not None and linked not in holders:
+                    holders.append(linked)
+            except Exception:
+                pass
+            for parent in list(holders):
+                for child in getattr(parent, "Group", []) or []:
+                    if child not in holders:
+                        holders.append(child)
+                tip = getattr(parent, "Tip", None)
+                if tip is not None and tip not in holders:
+                    holders.append(tip)
+            return holders
+
+        def get_exact_material_and_density(obj):
+            """Returns (material name, density in kg/mm^3). Prints diagnostics to the FreeCAD console."""
+            if obj is None:
+                return "Not Defined", None
+
+            mat_name = None
+            density = None
+            App.Console.PrintMessage(f"[CSV material] Looking up material for '{obj.Label}' ({obj.TypeId})\n")
+
+            # --- Strategy 0: ShapeMaterial (FreeCAD 1.0+), on the object, its link, or its children ---
+            for holder in find_material_holders(obj):
+                if not hasattr(holder, "ShapeMaterial"):
+                    continue
+                try:
+                    sm = holder.ShapeMaterial
+                    if sm is None:
+                        continue
+                    App.Console.PrintMessage(
+                        f"[CSV material]   ShapeMaterial found on '{holder.Label}' ({holder.TypeId}); "
+                        f"Name={getattr(sm, 'Name', None)!r}\n"
+                    )
+                    raw = None
+                    try:
+                        raw = sm.getPhysicalValue("Density")
+                    except Exception:
+                        pass
+                    if raw is None:
+                        raw = getattr(sm, "Properties", {}).get("Density")
+                    App.Console.PrintMessage(f"[CSV material]   raw Density = {raw!r} ({type(raw).__name__})\n")
+                    d = density_to_kg_mm3(raw)
+                    name = getattr(sm, "Name", None) or getattr(sm, "Label", None)
+                    if d is not None:
+                        density, mat_name = d, name
+                        break
+                    if name and not mat_name:
+                        mat_name = name
+                except Exception as e:
+                    App.Console.PrintError(f"[CSV material]   ShapeMaterial read failed on '{holder.Label}': {e}\n")
+
+            # --- Strategy 1: legacy dict-style Material property (older FreeCAD / FEM cards) ---
+            if density is None:
+                for holder in find_material_holders(obj):
+                    card = getattr(holder, "Material", None)
+                    if isinstance(card, dict) and card.get("Density") is not None:
+                        density = density_to_kg_mm3(card.get("Density"))
+                        mat_name = card.get("Name") or card.get("CardName") or mat_name
+                        break
+
+            # --- Strategy 2: no material name found -> infer it from the density ---
+            if density is not None and (not mat_name or mat_name in ("Not Defined", "Defined Material")):
+                guessed = guess_material_from_density(density)
+                if guessed:
+                    mat_name = guessed
+
+            if density is None:
+                App.Console.PrintWarning(
+                    f"[CSV material] No density found for '{obj.Label}'. "
+                    "Assign a material to the body (Part > Material) or check the console lines above.\n"
+                )
+            return mat_name if mat_name else "Not Defined", density
+        
+
+        # 1. Safely retrieve assembly bodies and properties
+        moving_body = self.get_target_body()
+        if moving_body is None:
             App.Console.PrintError("Error: No valid body found or selected in the model!\n")
             return
 
-        # 2. Extract Gravity Vector
-        gravity_vec = getattr(self, 'gravity_vector', App.Vector(0, 0, -1))
+        fixed_body = getattr(self, 'groundedBody', None)
 
-        # 3. Compute Material & Physical Properties safely
-        body_label = body.Label
-        volume_mm3 = body.Shape.Volume
+        
+        # Retrieve system properties for moving body
+        moving_mat_name, moving_density = get_exact_material_and_density(moving_body)
+        moving_vol = moving_body.Shape.Volume if hasattr(moving_body, "Shape") else "N/A"
+        
+        if isinstance(moving_vol, (int, float)) and moving_density is not None:
+            moving_mass = moving_vol * moving_density
+        else:
+            moving_mass = "N/A"
 
-        density_kg_mm3 = 7.874e-6  # Default fallback (Steel in kg/mm^3)
-        material_name = "Default (Steel)"
+        # Retrieve system properties for fixed body
+        fixed_mat_name = "N/A"
+        fixed_density = "N/A"
+        fixed_vol = "N/A"
+        fixed_mass = "N/A"
 
-        if hasattr(body, "Material") and body.Material:
-            mat_map = body.Material
-            if "Name" in mat_map:
-                material_name = mat_map["Name"]
-            if "Density" in mat_map:
-                density_val = mat_map["Density"]
-                density_kg_m3 = float(density_val.split()[0]) if isinstance(density_val, str) else float(density_val)
-                density_kg_mm3 = density_kg_m3 / 1e9
+        if fixed_body:
+            fixed_mat_name, fixed_density_val = get_exact_material_and_density(fixed_body)
+            fixed_density = fixed_density_val if fixed_density_val is not None else "N/A"
+            if hasattr(fixed_body, "Shape"):
+                fixed_vol = fixed_body.Shape.Volume
+                if isinstance(fixed_vol, (int, float)) and fixed_density_val is not None:
+                    fixed_mass = fixed_vol * fixed_density_val
 
-        mass_kg = volume_mm3 * density_kg_mm3
+        
+        # Extract kinematics: Centre of mass & Euler parameters (Quaternion)
+        moving_shape = moving_body.Shape
+        moving_com = moving_shape.CenterOfMass
+        moving_q = moving_body.Placement.Rotation.Q
 
-        # 4. Write data using explicit commas and Excel delimiter hint
+        if fixed_body and hasattr(fixed_body, "Shape"):
+            fixed_com = fixed_body.Shape.CenterOfMass
+            fixed_q = fixed_body.Placement.Rotation.Q
+        else:
+            fixed_com = None
+            fixed_q = None
+
+        # 2. Write Data to CSV
         try:
             with open(file_path, mode='w', newline='', encoding='utf-8') as csv_file:
-                # Force Excel to recognize commas regardless of Windows locale
                 csv_file.write("sep=,\n")
-                
                 writer = csv.writer(csv_file, delimiter=',', quoting=csv.QUOTE_MINIMAL)
+
+                # Section 1: Assembly Metadata
+                writer.writerow(["Assembly name", App.ActiveDocument.Name if App.ActiveDocument else "N/A"])
+                writer.writerow([]) 
                 
-                # --- SECTION 1: METADATA ---
-                writer.writerow(["SECTION", "PARAMETER", "VALUE", "UNIT", "DETAILS / NOTES"])
-                writer.writerow(["Metadata", "Project Document", App.ActiveDocument.Name if App.ActiveDocument else "N/A", "", ""])
-                writer.writerow(["Metadata", "Target Moving Body", body_label, "", ""])
+                # Section 2: Material & Physical Properties
+                writer.writerow(["Body", "State", "Material", "Density (kg/mm^3)", "Volume (mm^3)", "Mass (kg)"])
+                if fixed_body:
+                    writer.writerow([fixed_body.Label, "fixed", fixed_mat_name, fixed_density, fixed_vol, fixed_mass])
+                writer.writerow([moving_body.Label, "moving", moving_mat_name, moving_density if moving_density else "N/A", moving_vol, moving_mass])
                 writer.writerow([])
-
-                # --- SECTION 2: MATERIAL & GLOBAL PROPERTIES ---
-                writer.writerow(["SECTION", "PROPERTY", "VALUE", "UNIT", "DETAILS / NOTES"])
-                writer.writerow(["Environment", "Gravity Vector X", gravity_vec.x, "Unit Vector", "Directional Component"])
-                writer.writerow(["Environment", "Gravity Vector Y", gravity_vec.y, "Unit Vector", "Directional Component"])
-                writer.writerow(["Environment", "Gravity Vector Z", gravity_vec.z, "Unit Vector", "Directional Component"])
-                writer.writerow(["Material", "Material Name", material_name, "N/A", "Assigned CAD Material"])
-                writer.writerow(["Material", "Density", density_kg_mm3, "kg/mm^3", "Volumetric Mass Density"])
-                writer.writerow(["Material", "Mass", mass_kg, "kg", "Calculated Body Mass"])
-                writer.writerow(["Geometry", "Volume", volume_mm3, "mm^3", "Total Solid Volume"])
-                writer.writerow([])
-
-                # --- SECTION 3: INITIAL BODY STATE ---
-                shape = body.Shape
-                com = shape.CenterOfMass
-                q = body.Placement.Rotation.Q
-
-                writer.writerow(["SECTION", "PROPERTY", "X / e0", "Y / e1", "Z / e2", "Scalar / e3", "UNIT"])
-                writer.writerow(["Kinematics", "Centre of Mass (mm)", com.x, com.y, com.z, "", "mm"])
-                writer.writerow(["Kinematics", "Centre of Mass (m)", com.x / 1000.0, com.y / 1000.0, com.z / 1000.0, "", "m"])
-                writer.writerow(["Kinematics", "Euler Parameters (p)", q[0], q[1], q[2], q[3], "Quaternion"])
-                writer.writerow([])
-
-                # --- SECTION 4: JOINT DIAGNOSTICS & AXES ---
-                writer.writerow(["SECTION", "JOINT NAME", "JOINT TYPE", "AXIS X", "AXIS Y", "AXIS Z", "ORIGIN X (mm)", "ORIGIN Y (mm)", "ORIGIN Z (mm)"])
                 
-                if hasattr(self, 'currentJoint') and self.currentJoint:
-                    axis = self.currentAxis
-                    origin = self.currentOrigin
+                # Section 3: Joint Type
+                writer.writerow(["Joint type"])
+                writer.writerow([self.currentJointType if hasattr(self, 'currentJointType') else "N/A"])    
+                writer.writerow([])
+
+                # Section 4: Axis of Direction / Joint Axis
+                writer.writerow(["Axis of direction"])
+                writer.writerow(["Axis X", "Axis Y", "Axis Z", "Origin X", "Origin Y", "Origin Z"])
+                if hasattr(self, 'currentAxis') and hasattr(self, 'currentOrigin'):
                     writer.writerow([
-                        "Joints",
-                        self.currentJoint.Label,
-                        self.currentJointType,
-                        axis.x, axis.y, axis.z,
-                        origin.x, origin.y, origin.z
+                        self.currentAxis.x, self.currentAxis.y, self.currentAxis.z,
+                        self.currentOrigin.x, self.currentOrigin.y, self.currentOrigin.z
                     ])
                 else:
-                    writer.writerow(["Joints", "N/A", "None Detected", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+                    writer.writerow(["N/A", "N/A", "N/A", "N/A", "N/A", "N/A"])
+                writer.writerow([])
 
-            App.Console.PrintMessage(f"Calculation logs successfully exported to: {file_path}\n")
-            
+                # Section 5: Kinematics (Centre of Mass & Euler Parameters)
+                writer.writerow(["Kinematics"])
+                writer.writerow([
+                    "Body", "State", 
+                    "Centre of Mass X (mm)", "Centre of Mass Y (mm)", "Centre of Mass Z (mm)", 
+                    "Euler e0 (Scalar)", "Euler e1 (X)", "Euler e2 (Y)", "Euler e3 (Z)"
+                ])
+                if fixed_body and fixed_com and fixed_q:
+                    writer.writerow([
+                        fixed_body.Label, "fixed",
+                        fixed_com.x, fixed_com.y, fixed_com.z,
+                        fixed_q[3], fixed_q[0], fixed_q[1], fixed_q[2]
+                    ])
+                writer.writerow([
+                    moving_body.Label, "moving",
+                    moving_com.x, moving_com.y, moving_com.z,
+                    moving_q[3], moving_q[0], moving_q[1], moving_q[2]
+                ])
+
+            App.Console.PrintMessage(f"CSV successfully exported to: {file_path}\n")
+
         except Exception as e:
             App.Console.PrintError(f"Failed to export CSV: {e}\n")
-    
     
     def recalculateMassProperties(self):
 
